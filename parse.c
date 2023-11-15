@@ -30,14 +30,16 @@ void parse_buffer(char *buffer_in)
 void dispatcher()
 {
     int id = -1;
+
     for (int i = 0; i < sizeof(cmd_list) / sizeof(shell); i++)
     {
         char temp[128];
 
-        // sprintf((char *)temp, "%s", (char *)arg[0]);
-        if (strncmp((char *)arg[0], cmd_list[i].name, strlen(cmd_list[i].name)) == 0)
+        // printf("%s-%s\n", arg[0], cmd_list[i].name);
+        // printf("%d",strcmp((char *)arg[0], cmd_list[i].name))
+        if (strcmp((char *)arg[0], cmd_list[i].name) == 0)
         {
-            id = cmd_list->id;
+            id = cmd_list[i].id;
         }
     }
 
@@ -46,6 +48,7 @@ void dispatcher()
         printf("cmd not found!\n");
         return;
     }
+
     syscall_handler_t handler = sys_table[id];
     handler(arg);
 }

@@ -18,3 +18,12 @@ void syscall_history()
         printf("%s\n", (char *)history[index]);
     }
 }
+
+void syscall_help()
+{
+    printf("help -- show all the cmds usage\n");
+}
+void syscall_man()
+{
+    printf("help -- show all the cmds usage\n");
+}
