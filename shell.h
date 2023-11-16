@@ -28,7 +28,10 @@ typedef int (*syscall_handler_t)(char *, char *, char *, char *);
 
 // 其他辅助函数
 void set_promat();
-
+int copy_file(char *src, char *dest);
+int copy_folder(char *src, char *dest);
+void remove_dir(char *path);
+void get_file_path(const char *path, const char *filename, char *filepath);
 // shell命令函数声明
 void syscall_history();
 void syscall_help(char *args);

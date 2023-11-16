@@ -41,6 +41,7 @@ void dispatcher()
         if (strcmp((char *)arg[0], cmd_list[i].name) == 0)
         {
             id = cmd_list[i].id;
+            break;
         }
     }
 

@@ -7,7 +7,6 @@ int main()
     int size = 1024;
     char *buffer = (char *)malloc(size);
 
-    // 目前先整三个命令
     set_promat();
     while (1)
     {

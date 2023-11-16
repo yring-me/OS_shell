@@ -98,18 +98,11 @@ void syscall_pwd()
 
 int syscall_cp(char *src, char *dest)
 {
-    FILE *fps, *fpd;
-    int ch;
+
     struct stat file_stat;
     if (stat(src, &file_stat) == -1)
     {
         printf("\x1b[31mError:dirctory no exist\x1b[0m\n");
-        return -1;
-    }
-
-    if (S_ISDIR(file_stat.st_mode) == 1)
-    {
-        printf("\x1b[31mcp: %s is a directory (not copied).\x1b[0m\n", src);
         return -1;
     }
 
@@ -119,6 +112,25 @@ int syscall_cp(char *src, char *dest)
         return -1;
     }
 
+    if (S_ISDIR(file_stat.st_mode) == 1)
+    {
+        if (copy_folder(src, dest) == -1)
+            return -1;
+    }
+
+    else if (S_ISREG(file_stat.st_mode) == 1)
+    {
+        if (copy_file(src, dest) == -1)
+            return -1;
+    }
+
+    return 0;
+}
+
+int copy_file(char *src, char *dest)
+{
+    FILE *fps, *fpd;
+    int ch;
     fps = fopen(src, "r");
     if (fps == NULL)
     {
@@ -152,16 +164,66 @@ int syscall_cp(char *src, char *dest)
     return 0;
 }
 
+int copy_folder(char *src, char *dest)
+{
+    char newsrcPath[4096];
+    char newdestPath[4096];
+
+    if (mkdir(dest, 0777)) // 如果不存在就用mkdir函数来创建
+    {
+        printf("\x1b[31mfile has exited\x1b[0m\n");
+        return -1;
+    }
+
+    DIR *srcDp = opendir(src);
+    if (srcDp == NULL)
+    {
+        printf("\x1b[31mfaile to open %s\x1b[0m\n", src);
+        return -1;
+    }
+    struct dirent *srcDirent = NULL;
+    int flag = 0;
+    while ((srcDirent = readdir(srcDp)) != NULL)
+    {
+        flag++;
+        if (flag > 2) // 去除隐藏文件 . ..
+        {
+            bzero(newsrcPath, sizeof(newsrcPath)); // 清空
+            bzero(newdestPath, sizeof(newdestPath));
+
+            sprintf(newsrcPath, "%s/%s", src, srcDirent->d_name); // 保存新的文件路径
+            sprintf(newdestPath, "%s/%s", dest, srcDirent->d_name);
+
+            if (srcDirent->d_type == DT_DIR) // 文件夹的拷贝
+                copy_folder(newsrcPath, newdestPath);
+            else // 普通文件
+                copy_file(newsrcPath, newdestPath);
+        }
+    }
+    return 0;
+}
+
 void syscall_rm(char *src, char *arg1)
 {
     struct stat file_stat;
+    if (strcmp("-r", src) == 0)
+    {
+        char *temp = src;
+        src = arg1;
+        arg1 = temp;
+    }
+    if (strlen(src) == 0)
+    {
+        printf("\x1b[31mNeed a fild name\x1b[0m\n");
+        return;
+    }
     if (stat(src, &file_stat) == -1)
     {
-        printf("\x1b[31m");
-        perror("stat");
-        printf("\x1b[0m");
+
+        printf("\x1b[31mNo such file or directory\x1b[0m\n");
     }
 
+    // 删文件夹 但缺少 -r 参数
     if (S_ISDIR(file_stat.st_mode) == 1 && strcmp("-r", arg1) != 0)
     {
         printf("\x1b[31mcp: %s is a directory (not copied).\x1b[0m\n", src);
@@ -169,13 +231,63 @@ void syscall_rm(char *src, char *arg1)
         return;
     }
 
-    if ((S_ISDIR(file_stat.st_mode) == 1 && strcmp("-r", arg1) == 0) || (S_ISREG(file_stat.st_mode) == 1))
+    // 删文件夹
+    if ((S_ISDIR(file_stat.st_mode) == 1 && strcmp("-r", arg1) == 0))
+    {
+        remove_dir(src);
+        return;
+    }
+
+    if ((S_ISREG(file_stat.st_mode) == 1))
     {
         printf("\x1b[31m");
         remove(src);
         printf("\x1b[0m");
         return;
     }
+}
+
+void remove_dir(char *path)
+{
+    DIR *dir;
+    struct dirent *dirinfo;
+    struct stat statbuf;
+    char file_path[256] = {0};
+    lstat(path, &statbuf);
+    if (S_ISREG(statbuf.st_mode) == 1)
+    {
+        remove(path);
+    }
+    else if (S_ISDIR(statbuf.st_mode) == 1)
+    {
+        if ((dir = opendir(path)) == NULL)
+        {
+            return;
+        }
+        while ((dirinfo = readdir(dir)) != NULL)
+        {
+
+            get_file_path(path, dirinfo->d_name, file_path);
+            if (strcmp(dirinfo->d_name, ".") == 0 || strcmp(dirinfo->d_name, "..") == 0)
+                continue;
+
+            remove_dir(file_path);
+            rmdir(file_path);
+        }
+        closedir(dir);
+    }
+    remove(path);
+    return;
+}
+
+void get_file_path(const char *path, const char *filename, char *filepath)
+{
+    strcpy(filepath, path);
+    if (filepath[strlen(path) - 1] != '/')
+    {
+        strcat(filepath, "/");
+    }
+    strcat(filepath, filename);
 }
 
 void syscall_mv(char *src, char *dest)
