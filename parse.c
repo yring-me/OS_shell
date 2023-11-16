@@ -5,6 +5,7 @@
 char arg[10][128] = {0};
 char history[100][128] = {0};
 int history_total = -1;
+
 void dispatcher();
 
 void parse_buffer(char *buffer_in)
@@ -20,7 +21,7 @@ void parse_buffer(char *buffer_in)
 
     while (token != NULL)
     {
-        memset(arg, 0, sizeof(arg));
+
         sprintf((char *)arg[index++], "%s", token);
 
         token = strtok(NULL, " ");
@@ -45,10 +46,11 @@ void dispatcher()
 
     if (id == -1)
     {
-        printf("cmd not found!\n");
+        printf("\x1b[31mcmd not found!\x1b[0m\n");
         return;
     }
 
     syscall_handler_t handler = sys_table[id];
-    handler(arg);
+    handler(arg[1], arg[2], arg[3], arg[4]);
+    memset(arg, 0, sizeof(arg));
 }

@@ -4,6 +4,16 @@
         "stdio.h": "c",
         "variant": "c",
         "string.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "shell.h": "c",
+        "__config": "c",
+        "__hash_table": "c",
+        "algorithm": "c",
+        "cstdio": "c",
+        "string": "c",
+        "string_view": "c",
+        "typeinfo": "c",
+        "unordered_map": "c",
+        "vector": "c"
     }
 }

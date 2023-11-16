@@ -1,24 +1,24 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-extern char history[100][128];
-extern int history_total;
-extern void parse_buffer(char *);
-extern void syscall_history();
-extern void dispatcher();
+#include "main.h"
 int main()
 {
     int size = 1024;
     char *buffer = (char *)malloc(size);
 
     // 目前先整三个命令
-    for (int i = 0; i < 3; i++)
+    set_promat();
+    while (1)
     {
         memset(buffer, 0, 1024);
-        printf(">>>");
+        printf("\x1b[36m%s\x1b[0m\n", promat);
+        printf("\x1b[36m>>>\x1b[0m");
+
         fgets(buffer, size, stdin);
 
         parse_buffer(buffer);
         dispatcher();
+        printf("\n");
     }
 }

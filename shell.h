@@ -3,24 +3,54 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/stat.h>
+extern char history[100][128];
+extern int history_total;
+extern char promat[512];
 
 #define SYS_HELP 0
 #define SYS_MAN 1
+#define SYS_LS 2
+#define SYS_CD 3
+#define SYS_PWD 4
+#define SYS_CP 5
+#define SYS_RM 6
+#define SYS_MV 7
 #define SYS_HISTORY 99
 
 // 函数指针，用于抽象，统一调用
-typedef int (*syscall_handler_t)(char[10][128]);
+typedef int (*syscall_handler_t)(char *, char *, char *, char *);
+
+// 其他辅助函数
+void set_promat();
 
 // shell命令函数声明
 void syscall_history();
-void syscall_help();
+void syscall_help(char *args);
 void syscall_man();
+void syscall_ls(char *path, const char *agrs);
+void syscall_cd(char *path);
+void syscall_pwd();
+int syscall_cp(char *src, char *dest);
+void syscall_rm(char *src, char *arg1);
+void syscall_mv(char *src, char *dest);
 
 // shell函数注册
 static const syscall_handler_t sys_table[] = {
     [SYS_HISTORY] = (syscall_handler_t)syscall_history,
     [SYS_HELP] = (syscall_handler_t)syscall_help,
     [SYS_MAN] = (syscall_handler_t)syscall_man,
+    [SYS_LS] = (syscall_handler_t)syscall_ls,
+    [SYS_CD] = (syscall_handler_t)syscall_cd,
+    [SYS_PWD] = (syscall_handler_t)syscall_pwd,
+    [SYS_CP] = (syscall_handler_t)syscall_cp,
+    [SYS_RM] = (syscall_handler_t)syscall_rm,
+    [SYS_MV] = (syscall_handler_t)syscall_mv,
 };
 
 // 基本shell结构
@@ -43,6 +73,31 @@ static const shell cmd_list[] = {
     {
         .name = "man",
         .id = SYS_MAN,
-    }};
+    },
+    {
+        .name = "ls",
+        .id = SYS_LS,
+    },
+    {
+        .name = "cd",
+        .id = SYS_CD,
+    },
+    {
+        .name = "pwd",
+        .id = SYS_PWD,
+    },
+    {
+        .name = "cp",
+        .id = SYS_CP,
+    },
+    {
+        .name = "rm",
+        .id = SYS_RM,
+    },
+    {
+        .name = "mv",
+        .id = SYS_MV,
+    },
+};
 
 #endif
