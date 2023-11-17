@@ -1,3 +1,0 @@
-. .. main.h shell.h .DS_Store README.md shell.c a.out main.c .gitattributes test.c parse.c used_for_>>_redir .git .vscode 
-. .. main.h shell.h .DS_Store README.md shell.c a.out main.c .gitattributes 1.txt test.c parse.c used_for_>>_redir .git .vscode 
-/Users/yongrin/Desktop/SYSU/操作系统/my_shell/OS_shell
