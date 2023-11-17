@@ -2,7 +2,7 @@
 
 void set_promat()
 {
-    char temp[500] = {0};
+    char temp[500] = {""};
     getcwd(temp, sizeof(temp));
     sprintf((char *)(promat), "%s", temp);
 }
@@ -46,7 +46,7 @@ void syscall_ls(char *path, const char *agrs)
 
     if ((dir = opendir(path)) == NULL)
     {
-        fprintf(stderr, "Error: Cannot open directory '%s'. %s\n", path, strerror(errno));
+        fprintf(stderr, "\x1b[31mError: Cannot open directory '%s'. %s\x1b[0m\n", path, strerror(errno));
         return;
     }
 
@@ -71,11 +71,12 @@ void syscall_ls(char *path, const char *agrs)
         default:
             break;
         }
-
-        printf("%s-%d ", entry->d_name, entry->d_type);
+        if (strcmp(entry->d_name, redir_info.out_backup_name) != 0)
+            printf("%s ", entry->d_name);
         printf("\x1b[0m");
     }
     printf("\n");
+
     closedir(dir);
 }
 

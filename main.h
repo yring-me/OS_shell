@@ -9,4 +9,9 @@ extern void parse_buffer(char *);
 extern void syscall_history();
 extern void dispatcher();
 extern void set_promat();
+extern void redir_init();
+extern void parse_redir();
+extern void fd_reset();
+extern void clean_buffer();
+extern int check_cmd();
 #endif

@@ -9,6 +9,9 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/types.h>
+
 extern char history[100][128];
 extern int history_total;
 extern char promat[512];
@@ -102,5 +105,30 @@ static const shell cmd_list[] = {
         .id = SYS_MV,
     },
 };
+
+static struct redir_info
+{
+    int is_input_redir;
+    int is_output_redir;
+    int out_flag;
+    int out_fd;
+    char out_backup_name[128];
+    char in_file_name[128];
+    char out_file_name[128];
+} redir_info;
+
+static struct old_fd
+{
+    int stdin_fd;
+    int stdout_fd;
+    int sterr_fd;
+} old_fd;
+
+static struct new_fd
+{
+    int stdin_fd;
+    int stdout_fd;
+    int sterr_fd;
+} new_fd;
 
 #endif
