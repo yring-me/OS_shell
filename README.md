@@ -35,19 +35,24 @@ clang *.c
 ```
 
 ### 增加一个shell命令的步骤
-1. 在`shell.h`中新增一个调用号，类似于这样
+1. 在`shell.h`中新增一个调用号
 ```
 #define SYS_HISTORY 99
 ```
 但是注意不要与已有的冲突，当然是可以随便取的
 
-2. 在`shell.h`中的`sys_table[]`注册函数，类似于这样
+2. 在`shell.h`中的`sys_table[]`注册函数
 ```
     [SYS_HISTORY] = (syscall_handler_t)syscall_history,
 ```
 左边是刚刚定义的宏，右边是待实现的函数
 
-3. 在`shell.h`中的`cmd_list[] `注册命令，类似于这样
+3. 在'shell.h'中添加函数声明
+```
+void syscall_history();
+```
+
+4. 在`shell.h`中的`cmd_list[] `注册命令
 ```
  {
         .name = "history",
@@ -56,7 +61,7 @@ clang *.c
 ```
 其中name是命令的名字，id是刚刚定义宏
 
-4. 前往`shell.c`中实现刚刚注册函数，类似于这样
+5. 前往`shell.c`中实现刚刚注册函数
 ```
 void syscall_history()
 {
@@ -64,7 +69,7 @@ void syscall_history()
 }
 ```
 
-5. 如果需要定义一些辅助函数，建议在`shell.h`中的最上方的定义，你应该能够找到在哪。你想在哪定义都是可以的，只不过要确保能够成功编译以及便于维护
+1. 如果需要定义一些辅助函数，建议在`shell.h`中的最上方的定义，你应该能够找到在哪。你想在哪定义都是可以的，只不过要确保能够成功编译以及便于维护
 
 
 
