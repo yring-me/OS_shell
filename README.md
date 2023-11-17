@@ -47,7 +47,7 @@ clang *.c
 ```
 左边是刚刚定义的宏，右边是待实现的函数
 
-3. 在'shell.h'中添加函数声明
+3. 在`shell.h`中添加函数声明
 ```
 void syscall_history();
 ```
