@@ -24,6 +24,7 @@ extern char promat[512];
 #define SYS_CP 5
 #define SYS_RM 6
 #define SYS_MV 7
+#define SYS_MKDIR 8
 #define SYS_HISTORY 99
 
 // 函数指针，用于抽象，统一调用
@@ -45,6 +46,7 @@ void syscall_pwd();
 int syscall_cp(char *src, char *dest);
 void syscall_rm(char *src, char *arg1);
 void syscall_mv(char *src, char *dest);
+void syscall_mkdir(char *name);
 
 // shell函数注册
 static const syscall_handler_t sys_table[] = {
@@ -57,6 +59,8 @@ static const syscall_handler_t sys_table[] = {
     [SYS_CP] = (syscall_handler_t)syscall_cp,
     [SYS_RM] = (syscall_handler_t)syscall_rm,
     [SYS_MV] = (syscall_handler_t)syscall_mv,
+    [SYS_MKDIR] = (syscall_handler_t)syscall_mkdir,
+
 };
 
 // 基本shell结构
@@ -103,6 +107,10 @@ static const shell cmd_list[] = {
     {
         .name = "mv",
         .id = SYS_MV,
+    },
+    {
+        .name = "mkdir",
+        .id = SYS_MKDIR,
     },
 };
 
