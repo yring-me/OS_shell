@@ -43,16 +43,16 @@ clang *.c
 
 2. 在`shell.h`中的`sys_table[]`注册函数，类似于这样
 ```
-    [SYS_HISTORY] = (syscall_handler_t)syscall_history,
+[SYS_HISTORY] = (syscall_handler_t)syscall_history,
 ```
 左边是刚刚定义的宏，右边是待实现的函数
 
 3. 在`shell.h`中的`cmd_list[] `注册命令，类似于这样
 ```
- {
-        .name = "history",
-        .id = SYS_HISTORY,
-    },
+{
+    .name = "history",
+    .id = SYS_HISTORY,
+},
 ```
 其中name是命令的名字，id是刚刚定义宏
 
@@ -60,7 +60,7 @@ clang *.c
 ```
 void syscall_history()
 {
-    FUNCITON_CODE_HERE;
+    FUNCTION_CODE_HERE;
 }
 ```
 
@@ -74,6 +74,7 @@ void syscall_history()
 >>>
 ```
 ![](imgs/1.png)
+
 但我只做了苹果的图标，因此理论上只有苹果用户可以看见，Linux用户请前往`main.c`中约14行位置，即`while`循环里第一个`printf`处，将苹果图标进行替换。（实际上可以读取环境信息做到自适应，但是我不想做+__+）
 ## TODO：
 > ps 命令
