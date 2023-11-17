@@ -25,6 +25,7 @@ extern char promat[512];
 #define SYS_RM 6
 #define SYS_MV 7
 #define SYS_MKDIR 8
+#define SYS_TREE 9
 #define SYS_HISTORY 99
 
 // 函数指针，用于抽象，统一调用
@@ -36,6 +37,8 @@ int copy_file(char *src, char *dest);
 int copy_folder(char *src, char *dest);
 void remove_dir(char *path);
 void get_file_path(const char *path, const char *filename, char *filepath);
+void tree(char direntName[], int level);
+
 // shell命令函数声明
 void syscall_history();
 void syscall_help(char *args);
@@ -47,6 +50,7 @@ int syscall_cp(char *src, char *dest);
 void syscall_rm(char *src, char *arg1);
 void syscall_mv(char *src, char *dest);
 void syscall_mkdir(char *name);
+void syscall_tree(char *path);
 
 // shell函数注册
 static const syscall_handler_t sys_table[] = {
@@ -60,6 +64,7 @@ static const syscall_handler_t sys_table[] = {
     [SYS_RM] = (syscall_handler_t)syscall_rm,
     [SYS_MV] = (syscall_handler_t)syscall_mv,
     [SYS_MKDIR] = (syscall_handler_t)syscall_mkdir,
+    [SYS_TREE] = (syscall_handler_t)syscall_tree,
 
 };
 
@@ -111,6 +116,10 @@ static const shell cmd_list[] = {
     {
         .name = "mkdir",
         .id = SYS_MKDIR,
+    },
+    {
+        .name = "tree",
+        .id = SYS_TREE,
     },
 };
 
