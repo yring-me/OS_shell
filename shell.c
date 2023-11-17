@@ -80,6 +80,11 @@ void syscall_ls(char *path, const char *agrs)
     closedir(dir);
 }
 
+void syscall_mkdir(char *name)
+{
+    mkdir(name, 0777);
+}
+
 void syscall_cd(char *path)
 {
     if (chdir(path) == 0)
