@@ -35,49 +35,14 @@ void syscall_man()
     printf("help -- show all the cmds usage\n");
 }
 
-void syscall_ls(char *path, const char *agrs)
+void syscall_ls(char *args0, const char *agrs1, const char *args2)
 {
-    DIR *dir;
-    struct dirent *entry;
-    if (strlen(path) == 0)
-    {
-        path = ".";
-    }
-
-    if ((dir = opendir(path)) == NULL)
-    {
-        fprintf(stderr, "\x1b[31mError: Cannot open directory '%s'. %s\x1b[0m\n", path, strerror(errno));
-        return;
-    }
-
-    while ((entry = readdir(dir)) != NULL)
-    {
-        // 普通文件 绿色
-        switch (entry->d_type)
-        {
-        case DT_REG:
-            printf("\x1b[32m");
-            break;
-
-        // 文件夹 蓝色
-        case DT_DIR:
-            printf("\x1b[96m");
-            break;
-
-        // 链接文件 紫色
-        case DT_LNK:
-            printf("\x1b[35m");
-            break;
-        default:
-            break;
-        }
-        if (strcmp(entry->d_name, redir_info.out_backup_name) != 0)
-            printf("%s ", entry->d_name);
-        printf("\x1b[0m");
-    }
-    printf("\n");
-
-    closedir(dir);
+    ls_info_check(args0, agrs1, args2);
+    if (ls_info.is_l == 1)
+        ls_l();
+    else
+        ls();
+    ls_info_reset();
 }
 
 void syscall_mkdir(char *name)
@@ -131,6 +96,242 @@ int syscall_cp(char *src, char *dest)
     }
 
     return 0;
+}
+
+void syscall_rm(char *src, char *arg1)
+{
+    struct stat file_stat;
+    if (strcmp("-r", src) == 0)
+    {
+        char *temp = src;
+        src = arg1;
+        arg1 = temp;
+    }
+    if (strlen(src) == 0)
+    {
+        printf("\x1b[31mNeed a fild name\x1b[0m\n");
+        return;
+    }
+    if (stat(src, &file_stat) == -1)
+    {
+
+        printf("\x1b[31mNo such file or directory\x1b[0m\n");
+    }
+
+    // 删文件夹 但缺少 -r 参数
+    if (S_ISDIR(file_stat.st_mode) == 1 && strcmp("-r", arg1) != 0)
+    {
+        printf("\x1b[31mcp: %s is a directory (not copied).\x1b[0m\n", src);
+        printf("\x1b[31muse -r to delete it.\x1b[0m\n");
+        return;
+    }
+
+    // 删文件夹
+    if ((S_ISDIR(file_stat.st_mode) == 1 && strcmp("-r", arg1) == 0))
+    {
+        remove_dir(src);
+        return;
+    }
+
+    if ((S_ISREG(file_stat.st_mode) == 1))
+    {
+        printf("\x1b[31m");
+        remove(src);
+        printf("\x1b[0m");
+        return;
+    }
+}
+
+void syscall_mv(char *src, char *dest)
+{
+    if (syscall_cp(src, dest) == -1)
+    {
+        return;
+    }
+    syscall_rm(src, "-r");
+}
+
+void syscall_tree(char *name)
+{
+    tree(name, 0);
+}
+
+void ls_info_check(char *args0, const char *args1, const char *args2)
+{
+    if (args0[0] == '-' && strcmp(args0, "-l") != 0 && strcmp(args0, "-a") != 0 && strcmp(args0, "-al") != 0 && strcmp(args0, "-la") != 0)
+        printf("\x1b[33mWarning Invalid Arguments %s\x1b[0m\n", args0);
+    if (args1[0] == '-' && strcmp(args1, "-l") != 0 && strcmp(args1, "-a") != 0 && strcmp(args1, "-al") != 0 && strcmp(args1, "-la") != 0)
+        printf("\x1b[33mWarning Invalid Arguments %s\x1b[0m\n", args1);
+    if (args2[0] == '-' && strcmp(args2, "-l") != 0 && strcmp(args2, "-a") != 0 && strcmp(args2, "-al") != 0 && strcmp(args2, "-la") != 0)
+        printf("\x1b[33mWarning Invalid Arguments %s\x1b[0m\n", args2);
+    if (strcmp(args0, "-l") == 0 || strcmp(args1, "-l") == 0 || strcmp(args2, "-l") == 0)
+        ls_info.is_l = 1;
+    if (strcmp(args0, "-a") == 0 || strcmp(args1, "-a") == 0 || strcmp(args2, "-a") == 0)
+        ls_info.is_a = 1;
+    if (strcmp(args0, "-al") == 0 || strcmp(args1, "-al") == 0 || strcmp(args2, "-al") == 0)
+    {
+        ls_info.is_l = 1;
+        ls_info.is_a = 1;
+    }
+    if (strcmp(args0, "-la") == 0 || strcmp(args1, "-la") == 0 || strcmp(args2, "-la") == 0)
+    {
+        ls_info.is_l = 1;
+        ls_info.is_a = 1;
+    }
+
+    if (strlen(args2) != 0 && args2[0] != '-')
+        sprintf(ls_info.path, "%s", args2);
+
+    if (strlen(args1) != 0 && args1[0] != '-')
+    {
+        memset(ls_info.path, 0, sizeof(ls_info.path));
+        sprintf(ls_info.path, "%s", args1);
+    }
+
+    if (strlen(args0) != 0 && args0[0] != '-')
+    {
+        memset(ls_info.path, 0, sizeof(ls_info.path));
+        sprintf(ls_info.path, "%s", args0);
+    }
+}
+
+void ls_info_reset()
+{
+    ls_info.is_a = 0;
+    ls_info.is_l = 0;
+    memset(ls_info.path, 0, sizeof(ls_info.path));
+    memset(ls_info.temp_file, 0, sizeof(ls_info.temp_file));
+    sprintf(ls_info.path, "%s", ".");
+}
+
+void ls_info_init()
+{
+    ls_info.is_a = 0;
+    ls_info.is_l = 0;
+    memset(ls_info.path, 0, sizeof(ls_info.path));
+    memset(ls_info.temp_file, 0, sizeof(ls_info.temp_file));
+    sprintf(ls_info.path, "%s", ".");
+}
+
+void ls_l()
+{
+    DIR *dir;
+    struct dirent *entry;
+    static char *perm[] = {"---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"};
+    unsigned mask = 0700;
+    if ((dir = opendir(ls_info.path)) == NULL)
+    {
+        fprintf(stderr, "Error: Cannot open directory '%s'. %s\n", ls_info.path, strerror(errno));
+        return;
+    }
+
+    // readdir 函数：用于读取目录中的条目。它返回一个指向 dirent 结构体的指针，该结构体包含有关目录中下一个文件或子目录的信息。
+    while ((entry = readdir(dir)) != NULL)
+    {
+        if (ls_info.is_a == 0 && entry->d_name[0] == '.')
+            continue;
+        // 构建文件路径：使用 sprintf 函数构建文件的完整路径
+        char file_path[MAX_INPUT_SIZE];
+        sprintf(file_path, "%s/%s", ls_info.path, entry->d_name);
+
+        // 获取文件信息：使用 stat 函数获取文件的详细信息，包括文件类型、权限、所有者、组等
+        struct stat file_stat;
+        if (stat(file_path, &file_stat) == -1)
+        {
+            perror("stat");
+            exit(EXIT_FAILURE);
+        }
+
+        // 获取所有者和组信息：使用 getpwuid 和 getgrgid 函数获取文件所有者和组的详细信息
+        struct passwd *owner_info = getpwuid(file_stat.st_uid);
+        struct group *group_info = getgrgid(file_stat.st_gid);
+        char time_str[20];
+        strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", localtime(&file_stat.st_mtime));
+        char file_type = '-';
+        if (S_ISDIR(file_stat.st_mode))
+        {
+            file_type = 'd'; // 目录
+        }
+        else if (S_ISLNK(file_stat.st_mode))
+        {
+            file_type = 'l'; // 符号链接
+        }
+
+        // 输出文件信息：根据获取到的文件信息，使用 printf 函数输出文件的详细信息
+        printf("%c%3s%3s%3s %5hu %s %s %10lld %s ",
+               file_type,
+               perm[(file_stat.st_mode & mask) >> 2 * 3],
+               perm[(file_stat.st_mode & (mask >> 3)) >> 1 * 3],
+               perm[(file_stat.st_mode & (mask >> 6)) >> 0 * 3],
+               file_stat.st_nlink,
+               (owner_info != NULL) ? owner_info->pw_name : "",
+               (group_info != NULL) ? group_info->gr_name : "",
+               file_stat.st_size,
+               time_str);
+        switch (entry->d_type)
+        {
+        case DT_REG:
+            printf("\x1b[32m%s\n\x1b[0m", entry->d_name);
+            break;
+
+        // 文件夹 蓝色
+        case DT_DIR:
+            printf("\x1b[96m%s\n\x1b[0m", entry->d_name);
+            break;
+
+        // 链接文件 紫色
+        case DT_LNK:
+            printf("\x1b[35m%s\n\x1b[0m", entry->d_name);
+            break;
+        default:
+            printf("%s\n", entry->d_name);
+        }
+    }
+    closedir(dir);
+}
+
+void ls()
+{
+    DIR *dir;
+    struct dirent *entry;
+
+    if ((dir = opendir(ls_info.path)) == NULL)
+    {
+        fprintf(stderr, "\x1b[31mError: Cannot open directory '%s'. %s\x1b[0m\n", ls_info.path, strerror(errno));
+        ls_info_reset();
+        return;
+    }
+
+    while ((entry = readdir(dir)) != NULL)
+    {
+        if (ls_info.is_a == 0 && entry->d_name[0] == '.')
+            continue;
+        // 普通文件 绿色
+        switch (entry->d_type)
+        {
+        case DT_REG:
+            printf("\x1b[32m");
+            break;
+
+        // 文件夹 蓝色
+        case DT_DIR:
+            printf("\x1b[96m");
+            break;
+
+        // 链接文件 紫色
+        case DT_LNK:
+            printf("\x1b[35m");
+            break;
+        default:
+            break;
+        }
+        if (strcmp(entry->d_name, redir_info.out_backup_name) != 0)
+            printf("%s ", entry->d_name);
+        printf("\x1b[0m");
+    }
+    printf("\n");
+
+    closedir(dir);
 }
 
 int copy_file(char *src, char *dest)
@@ -209,50 +410,6 @@ int copy_folder(char *src, char *dest)
     return 0;
 }
 
-void syscall_rm(char *src, char *arg1)
-{
-    struct stat file_stat;
-    if (strcmp("-r", src) == 0)
-    {
-        char *temp = src;
-        src = arg1;
-        arg1 = temp;
-    }
-    if (strlen(src) == 0)
-    {
-        printf("\x1b[31mNeed a fild name\x1b[0m\n");
-        return;
-    }
-    if (stat(src, &file_stat) == -1)
-    {
-
-        printf("\x1b[31mNo such file or directory\x1b[0m\n");
-    }
-
-    // 删文件夹 但缺少 -r 参数
-    if (S_ISDIR(file_stat.st_mode) == 1 && strcmp("-r", arg1) != 0)
-    {
-        printf("\x1b[31mcp: %s is a directory (not copied).\x1b[0m\n", src);
-        printf("\x1b[31muse -r to delete it.\x1b[0m\n");
-        return;
-    }
-
-    // 删文件夹
-    if ((S_ISDIR(file_stat.st_mode) == 1 && strcmp("-r", arg1) == 0))
-    {
-        remove_dir(src);
-        return;
-    }
-
-    if ((S_ISREG(file_stat.st_mode) == 1))
-    {
-        printf("\x1b[31m");
-        remove(src);
-        printf("\x1b[0m");
-        return;
-    }
-}
-
 void remove_dir(char *path)
 {
     DIR *dir;
@@ -294,20 +451,6 @@ void get_file_path(const char *path, const char *filename, char *filepath)
         strcat(filepath, "/");
     }
     strcat(filepath, filename);
-}
-
-void syscall_mv(char *src, char *dest)
-{
-    if (syscall_cp(src, dest) == -1)
-    {
-        return;
-    }
-    syscall_rm(src, "-r");
-}
-
-void syscall_tree(char *name)
-{
-    tree(name, 0);
 }
 
 void tree(char *direntName, int level)

@@ -140,7 +140,7 @@ void redir_init()
 {
     memset(redir_info.in_file_name, 0, sizeof(redir_info.in_file_name));
     memset(redir_info.out_file_name, 0, sizeof(redir_info.out_file_name));
-    sprintf(redir_info.out_backup_name, "%s", "used_for_>>_redir");
+    sprintf(redir_info.out_backup_name, "%s", "./temp/used_for_>>_redir");
     redir_info.is_input_redir = 0;
     redir_info.is_output_redir = 0;
     redir_info.out_flag = 0;

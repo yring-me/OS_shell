@@ -7,6 +7,7 @@ int main()
     int size = 1024;
     char *buffer = (char *)malloc(size);
     redir_init();
+    ls_info_init();
     set_promat();
     while (1)
     {

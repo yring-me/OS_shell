@@ -11,6 +11,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <pwd.h>
+#include <grp.h>
+#include <time.h>
 
 extern char history[100][128];
 extern int history_total;
@@ -28,22 +31,28 @@ extern char promat[512];
 #define SYS_TREE 9
 #define SYS_HISTORY 99
 
+#define MAX_INPUT_SIZE 1024
 // 函数指针，用于抽象，统一调用
 typedef int (*syscall_handler_t)(char *, char *, char *, char *);
 
 // 其他辅助函数
+void ls_info_check(char *args0, const char *agrs1, const char *args2);
+void ls_info_reset();
+void ls_info_init();
+void ls_l();
+void ls();
 void set_promat();
 int copy_file(char *src, char *dest);
 int copy_folder(char *src, char *dest);
 void remove_dir(char *path);
 void get_file_path(const char *path, const char *filename, char *filepath);
-void tree(char direntName[], int level);
+void tree(char *direntName, int level);
 
 // shell命令函数声明
 void syscall_history();
 void syscall_help(char *args);
 void syscall_man();
-void syscall_ls(char *path, const char *agrs);
+void syscall_ls(char *args0, const char *agrs1, const char *args2);
 void syscall_cd(char *path);
 void syscall_pwd();
 int syscall_cp(char *src, char *dest);
@@ -141,11 +150,12 @@ static struct old_fd
     int sterr_fd;
 } old_fd;
 
-static struct new_fd
+static struct ls_info
 {
-    int stdin_fd;
-    int stdout_fd;
-    int sterr_fd;
-} new_fd;
-
+    int is_a;
+    int is_l;
+    int path_num;
+    char path[256];
+    char temp_file[128];
+} ls_info;
 #endif

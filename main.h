@@ -14,4 +14,6 @@ extern void parse_redir();
 extern void fd_reset();
 extern void clean_buffer();
 extern int check_cmd();
+extern void ls_info_init();
+
 #endif
