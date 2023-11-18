@@ -1,5 +1,6 @@
 #include "shell.h"
 
+// 处理样式，具体的我想输出当前路径
 void set_promat()
 {
     char temp[500] = {""};
@@ -7,6 +8,7 @@ void set_promat()
     sprintf((char *)(promat), "%s", temp);
 }
 
+// 历史记录信息
 void syscall_history()
 {
     int index = -1;
@@ -37,12 +39,12 @@ void syscall_man()
 
 void syscall_ls(char *args0, const char *agrs1, const char *args2)
 {
-    ls_info_check(args0, agrs1, args2);
+    ls_info_check(args0, agrs1, args2); // 处理参数信息，并把相关信息赋值给ls_info结构体
     if (ls_info.is_l == 1)
-        ls_l();
+        ls_l(); // 带 -l 参数
     else
-        ls();
-    ls_info_reset();
+        ls();        // 不带 -l 参数
+    ls_info_reset(); // 重置ls_info结构体
 }
 
 void syscall_mkdir(char *name)
@@ -71,13 +73,13 @@ int syscall_cp(char *src, char *dest)
 {
 
     struct stat file_stat;
-    if (stat(src, &file_stat) == -1)
+    if (stat(src, &file_stat) == -1) // 文件不存在
     {
         printf("\x1b[31mError:dirctory no exist\x1b[0m\n");
         return -1;
     }
 
-    if (strlen(src) == 0 || strlen(dest) == 0)
+    if (strlen(src) == 0 || strlen(dest) == 0) // 源文件或目的不存在
     {
         printf("\x1b[31mUsage:cp <src_file>  <dest_file>\x1b[0m\n");
         return -1;
@@ -85,13 +87,13 @@ int syscall_cp(char *src, char *dest)
 
     if (S_ISDIR(file_stat.st_mode) == 1)
     {
-        if (copy_folder(src, dest) == -1)
+        if (copy_folder(src, dest) == -1) // 复制文件夹
             return -1;
     }
 
     else if (S_ISREG(file_stat.st_mode) == 1)
     {
-        if (copy_file(src, dest) == -1)
+        if (copy_file(src, dest) == -1) // 复制文件
             return -1;
     }
 
@@ -101,7 +103,7 @@ int syscall_cp(char *src, char *dest)
 void syscall_rm(char *src, char *arg1)
 {
     struct stat file_stat;
-    if (strcmp("-r", src) == 0)
+    if (strcmp("-r", src) == 0) // 带 -r 参数的处理，即使得src始终指向文件
     {
         char *temp = src;
         src = arg1;
@@ -144,6 +146,7 @@ void syscall_rm(char *src, char *arg1)
 
 void syscall_mv(char *src, char *dest)
 {
+    // 移动就简单的理解为 复制 然后删除源文件
     if (syscall_cp(src, dest) == -1)
     {
         return;
@@ -151,19 +154,43 @@ void syscall_mv(char *src, char *dest)
     syscall_rm(src, "-r");
 }
 
-void syscall_tree(char *name)
+void syscall_tree(char *args0, char *args1)
 {
-    tree(name, 0);
+    // 处理 -a 参数，以及默认是当前路径
+    char path[256] = {0};
+    int is_a = 0;
+    if (strlen(args0) == 0 && strlen(args1) == 0)
+        sprintf(path, "%s", ".");
+    if (strcmp(args0, "-a") == 0 && strlen(args1) != 0)
+    {
+        sprintf(path, "%s", args1);
+        is_a = 1;
+    }
+
+    if (strcmp(args0, "-a") == 0 && strlen(args1) == 0)
+    {
+        sprintf(path, "%s", ".");
+        is_a = 1;
+    }
+
+    if (args0[0] != '-' && strlen(path) == 0)
+        sprintf(path, "%s", args0);
+    printf("%s\n", path);
+    tree(path, 0, is_a);
 }
 
+// 处理 ls 的参数信息
 void ls_info_check(char *args0, const char *args1, const char *args2)
 {
+    // 检查是否为合法参数，但只警告
     if (args0[0] == '-' && strcmp(args0, "-l") != 0 && strcmp(args0, "-a") != 0 && strcmp(args0, "-al") != 0 && strcmp(args0, "-la") != 0)
         printf("\x1b[33mWarning Invalid Arguments %s\x1b[0m\n", args0);
     if (args1[0] == '-' && strcmp(args1, "-l") != 0 && strcmp(args1, "-a") != 0 && strcmp(args1, "-al") != 0 && strcmp(args1, "-la") != 0)
         printf("\x1b[33mWarning Invalid Arguments %s\x1b[0m\n", args1);
     if (args2[0] == '-' && strcmp(args2, "-l") != 0 && strcmp(args2, "-a") != 0 && strcmp(args2, "-al") != 0 && strcmp(args2, "-la") != 0)
         printf("\x1b[33mWarning Invalid Arguments %s\x1b[0m\n", args2);
+
+    // 检查有 -l 或者 -a 标志
     if (strcmp(args0, "-l") == 0 || strcmp(args1, "-l") == 0 || strcmp(args2, "-l") == 0)
         ls_info.is_l = 1;
     if (strcmp(args0, "-a") == 0 || strcmp(args1, "-a") == 0 || strcmp(args2, "-a") == 0)
@@ -179,6 +206,7 @@ void ls_info_check(char *args0, const char *args1, const char *args2)
         ls_info.is_a = 1;
     }
 
+    // 处理路径信息
     if (strlen(args2) != 0 && args2[0] != '-')
         sprintf(ls_info.path, "%s", args2);
 
@@ -195,29 +223,30 @@ void ls_info_check(char *args0, const char *args1, const char *args2)
     }
 }
 
+// 重置 ls_info 信息
 void ls_info_reset()
 {
     ls_info.is_a = 0;
     ls_info.is_l = 0;
     memset(ls_info.path, 0, sizeof(ls_info.path));
-    memset(ls_info.temp_file, 0, sizeof(ls_info.temp_file));
     sprintf(ls_info.path, "%s", ".");
 }
 
+// 初始化 ls_info 信息
 void ls_info_init()
 {
     ls_info.is_a = 0;
     ls_info.is_l = 0;
     memset(ls_info.path, 0, sizeof(ls_info.path));
-    memset(ls_info.temp_file, 0, sizeof(ls_info.temp_file));
     sprintf(ls_info.path, "%s", ".");
 }
 
+// ls -l
 void ls_l()
 {
     DIR *dir;
     struct dirent *entry;
-    static char *perm[] = {"---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"};
+    static char *perm[] = {"---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"}; // 文件权限对应输出
     unsigned mask = 0700;
     if ((dir = opendir(ls_info.path)) == NULL)
     {
@@ -228,7 +257,7 @@ void ls_l()
     // readdir 函数：用于读取目录中的条目。它返回一个指向 dirent 结构体的指针，该结构体包含有关目录中下一个文件或子目录的信息。
     while ((entry = readdir(dir)) != NULL)
     {
-        if (ls_info.is_a == 0 && entry->d_name[0] == '.')
+        if (ls_info.is_a == 0 && entry->d_name[0] == '.') // 处理是否带有-a参数
             continue;
         // 构建文件路径：使用 sprintf 函数构建文件的完整路径
         char file_path[MAX_INPUT_SIZE];
@@ -268,8 +297,9 @@ void ls_l()
                (group_info != NULL) ? group_info->gr_name : "",
                file_stat.st_size,
                time_str);
-        switch (entry->d_type)
+        switch (entry->d_type) // 处理颜色
         {
+        // 普通文件 绿色
         case DT_REG:
             printf("\x1b[32m%s\n\x1b[0m", entry->d_name);
             break;
@@ -290,6 +320,7 @@ void ls_l()
     closedir(dir);
 }
 
+// ls
 void ls()
 {
     DIR *dir;
@@ -304,7 +335,7 @@ void ls()
 
     while ((entry = readdir(dir)) != NULL)
     {
-        if (ls_info.is_a == 0 && entry->d_name[0] == '.')
+        if (ls_info.is_a == 0 && entry->d_name[0] == '.') // 处理是否带有 -a 参数
             continue;
         // 普通文件 绿色
         switch (entry->d_type)
@@ -334,9 +365,10 @@ void ls()
     closedir(dir);
 }
 
+// 复制文件
 int copy_file(char *src, char *dest)
 {
-    FILE *fps, *fpd;
+    FILE *fps, *fpd; // 源文件 目标文件
     int ch;
     fps = fopen(src, "r");
     if (fps == NULL)
@@ -358,7 +390,7 @@ int copy_file(char *src, char *dest)
 
     while (1)
     {
-        ch = fgetc(fps);
+        ch = fgetc(fps); // 读取源文件字符 输出给目的文件
         if (ch == EOF)
         {
             break;
@@ -371,6 +403,7 @@ int copy_file(char *src, char *dest)
     return 0;
 }
 
+// 复制文件夹
 int copy_folder(char *src, char *dest)
 {
     char newsrcPath[4096];
@@ -410,6 +443,7 @@ int copy_folder(char *src, char *dest)
     return 0;
 }
 
+// 删除文件夹
 void remove_dir(char *path)
 {
     DIR *dir;
@@ -417,9 +451,10 @@ void remove_dir(char *path)
     struct stat statbuf;
     char file_path[256] = {0};
     lstat(path, &statbuf);
-    if (S_ISREG(statbuf.st_mode) == 1)
+    if (S_ISREG(statbuf.st_mode) == 1) // 删除普通文件
     {
         remove(path);
+        return;
     }
     else if (S_ISDIR(statbuf.st_mode) == 1)
     {
@@ -427,19 +462,19 @@ void remove_dir(char *path)
         {
             return;
         }
-        while ((dirinfo = readdir(dir)) != NULL)
+        while ((dirinfo = readdir(dir)) != NULL) // 删除文件夹
         {
 
-            get_file_path(path, dirinfo->d_name, file_path);
-            if (strcmp(dirinfo->d_name, ".") == 0 || strcmp(dirinfo->d_name, "..") == 0)
+            get_file_path(path, dirinfo->d_name, file_path);                             // 得到完整路径
+            if (strcmp(dirinfo->d_name, ".") == 0 || strcmp(dirinfo->d_name, "..") == 0) // 跳过 . .. 两个特殊目录
                 continue;
 
             remove_dir(file_path);
-            rmdir(file_path);
+            // rmdir(file_path);
         }
         closedir(dir);
     }
-    remove(path);
+    remove(path); // 删除当前文件
     return;
 }
 
@@ -453,7 +488,7 @@ void get_file_path(const char *path, const char *filename, char *filepath)
     strcat(filepath, filename);
 }
 
-void tree(char *direntName, int level)
+void tree(char *direntName, int level, int is_a)
 {
     // 定义一个目录流指针
     DIR *p_dir = NULL;
@@ -465,7 +500,8 @@ void tree(char *direntName, int level)
     p_dir = opendir(direntName);
     if (p_dir == NULL)
     {
-        printf("\x1b[31mopendir error\x1b[0m");
+        printf("\x1b[31mopendir error\n\x1b[0m");
+        return;
     }
 
     // 循环读取每个目录项, 当返回NULL时读取完毕
@@ -474,7 +510,9 @@ void tree(char *direntName, int level)
         // 备份之前的目录名
         char *backupDirName = NULL;
 
-        if (entry->d_name[0] == '.')
+        if (is_a == 0 && entry->d_name[0] == '.')
+            continue;
+        else if (is_a == 1 && strcmp(entry->d_name, "..") == 0 || (strcmp(entry->d_name, ".") == 0))
         {
             continue;
         }
@@ -482,10 +520,19 @@ void tree(char *direntName, int level)
         int i;
         for (i = 0; i < level; i++)
         {
-            printf("|");
-            printf("     ");
+            printf("│");
+            printf("   ");
         }
-        printf("|--- ");
+        int temp = telldir(p_dir);
+        if (readdir(p_dir) == NULL)
+        {
+            printf("└──");
+        }
+        else
+        {
+            printf("├──"); // └
+        }
+
         if (entry->d_type == DT_DIR)
             printf("\x1b[96m");
         else if (entry->d_type == DT_REG)
@@ -505,7 +552,7 @@ void tree(char *direntName, int level)
 
             strcat(direntName, "/");
             strcat(direntName, entry->d_name);
-            tree(direntName, level + 1);
+            tree(direntName, level + 1, is_a);
 
             // 恢复之前的目录名
             memcpy(direntName, backupDirName, curDirentNameLen);

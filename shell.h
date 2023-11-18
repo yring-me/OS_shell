@@ -46,7 +46,7 @@ int copy_file(char *src, char *dest);
 int copy_folder(char *src, char *dest);
 void remove_dir(char *path);
 void get_file_path(const char *path, const char *filename, char *filepath);
-void tree(char *direntName, int level);
+void tree(char *direntName, int level, int is_a);
 
 // shell命令函数声明
 void syscall_history();
@@ -59,7 +59,7 @@ int syscall_cp(char *src, char *dest);
 void syscall_rm(char *src, char *arg1);
 void syscall_mv(char *src, char *dest);
 void syscall_mkdir(char *name);
-void syscall_tree(char *path);
+void syscall_tree(char *args0, char *args1);
 
 // shell函数注册
 static const syscall_handler_t sys_table[] = {
@@ -132,30 +132,28 @@ static const shell cmd_list[] = {
     },
 };
 
-static struct redir_info
+static struct redir_info // 重定向信息
 {
-    int is_input_redir;
-    int is_output_redir;
-    int out_flag;
-    int out_fd;
-    char out_backup_name[128];
-    char in_file_name[128];
-    char out_file_name[128];
+    int is_input_redir;        // 是否为输入重定向
+    int is_output_redir;       // 是否为输出重定向
+    int out_flag;              // 输出重定向方式
+    int out_fd;                // 输出重定向文件描述符
+    char out_backup_name[128]; // 临时文件缓冲区
+    char in_file_name[128];    // 输入文件名字
+    char out_file_name[128];   // 输出文件名字
 } redir_info;
 
-static struct old_fd
+static struct old_fd // 原有重定向信息
 {
-    int stdin_fd;
-    int stdout_fd;
-    int sterr_fd;
+    int stdin_fd;  // 原有标准输入描述符
+    int stdout_fd; // 原有标准输出描述符
+    int sterr_fd;  // 原有标准错误描述符
 } old_fd;
 
-static struct ls_info
+static struct ls_info // ls 信息
 {
-    int is_a;
-    int is_l;
-    int path_num;
-    char path[256];
-    char temp_file[128];
+    int is_a;       // 是否带-a参数
+    int is_l;       // 是否带-l参数
+    char path[256]; // 路径名字
 } ls_info;
 #endif
