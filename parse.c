@@ -191,10 +191,14 @@ void clean_buffer()
 
     FILE *src_r = fopen(redir_info.out_backup_name, "r"); // 打开临时文件
 
-    char buffer[4096] = {0};
-    int buffer_index = 0;
+    FILE *src_w;
+    // 根据重定向方式打开文件
+    if (redir_info.out_flag == (O_RDWR | O_CREAT | O_APPEND))
+        src_w = fopen(redir_info.out_file_name, "a+");
+    else
+        src_w = fopen(redir_info.out_file_name, "w+");
 
-    while (1 && buffer_index < 4096)
+    while (1)
     {
         char ch = fgetc(src_r);
 
@@ -211,16 +215,9 @@ void clean_buffer()
                 fseek(src_r, 1, SEEK_CUR);
             continue;
         }
-        buffer[buffer_index++] = ch; // 只有非转义信息得以保存
+        fputc(ch, src_w);
     }
 
-    FILE *src_w;
-    // 根据重定向方式打开文件
-    if (redir_info.out_flag == (O_RDWR | O_CREAT | O_APPEND))
-        src_w = fopen(redir_info.out_file_name, "a+");
-    else
-        src_w = fopen(redir_info.out_file_name, "w+");
-    fwrite(buffer, strlen(buffer), 1, src_w);
     fclose(src_r);
     fclose(src_w);
     // 重置信息
