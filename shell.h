@@ -52,6 +52,7 @@ void remove_dir(char *path);
 void get_file_path(const char *path, const char *filename, char *filepath);
 void tree(char *direntName, int level, int is_a);
 void cat_file(const char *file);
+int cat(int argc, char *argv);
 
 // shell命令函数声明
 void syscall_history();
