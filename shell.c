@@ -563,3 +563,99 @@ void tree(char *direntName, int level, int is_a)
 
     closedir(p_dir);
 }
+
+
+void syscall_pipe(char *cmd1, char *cmd2) {
+    int fd[2];
+    pid_t pid1, pid2;
+
+    if (pipe(fd) < 0) {
+        perror("pipe error");
+        exit(1);
+    }
+
+    if ((pid1 = fork()) < 0) {
+        perror("fork error");
+        exit(1);
+    } else if (pid1 == 0) {
+        close(fd[0]);
+        dup2(fd[1], STDOUT_FILENO);
+        system(cmd1);
+        exit(0);
+    }
+
+    if ((pid2 = fork()) < 0) {
+        perror("fork error");
+        exit(1);
+    } else if (pid2 == 0) {
+        close(fd[1]);
+        dup2(fd[0], STDIN_FILENO);
+        system(cmd2);
+        exit(0);
+    }
+
+    close(fd[0]);
+    close(fd[1]);
+    waitpid(pid1, NULL, 0);
+    waitpid(pid2, NULL, 0);
+}
+
+int bflag, nflag, num;
+void cat_file(const char *file) {
+    FILE *fp;
+    if((fp = fopen(file, "r")) == NULL) {//判断是不是空文件
+        //打印错误信息
+        perror(file);
+        exit(1);
+    }
+    char buff[1024] = {0};
+    while(fgets(buff, sizeof(buff), fp)) {//按行读取
+        //都不成立 直接打印
+        if(!nflag && !bflag) {
+            printf("%s", buff);
+            continue;
+        }
+        if(buff[0] != '\n'){ 
+            num++;
+            printf("%d\t%s", num, buff);
+        }else {
+            //nflag成立 打印行号 不成立 不打印行号
+            if(nflag && !bflag) {
+                num++;
+                printf("%d\t\n", num);
+            }else {
+                printf("\n");
+            }
+        }
+    }
+    fclose(fp);//关闭文件
+    return ;
+}
+int cat(int argc, char *argv) {
+    char c;
+    while((c = getopt(argc, argv, "bn")) != -1) {//判断命令行参数
+        switch(c) {
+            case 'b':
+                bflag = 1;
+                break;
+            case 'n':
+                nflag = 1;
+                break;
+            default :
+                fprintf(stdout, "Use : %s [-b|-n] file!\n", argv[0]);
+                exit(1);
+        }
+    }
+    
+    cat_file(argv);    
+    return 0;
+}
+int syscall_cat(char *name){
+    cat(1, name);
+    return 0;
+}
+
+void syscall_clear(){
+    system("clear");
+}
+
