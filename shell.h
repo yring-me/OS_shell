@@ -54,6 +54,13 @@ void tree(char *direntName, int level, int is_a);
 void cat_file(const char *file);
 int cat(int argc, char *argv);
 
+int mkdir_recursive(const char *path, mode_t mode) ;
+void mkdir_info_check(char *args0, char *args1, char *args2, char *args3, char *args4);
+void mk_info_reset();
+void mk_info_init();
+
+
+
 // shell命令函数声明
 void syscall_history();
 void syscall_help(char *args);
@@ -64,7 +71,7 @@ void syscall_pwd();
 int syscall_cp(char *src, char *dest);
 void syscall_rm(char *src, char *arg1);
 void syscall_mv(char *src, char *dest);
-void syscall_mkdir(char *name);
+void syscall_mkdir(char *args0, char *args1, char *args2, char *args3, char *args4);
 void syscall_tree(char *args0, char *args1);
 void syscall_pipe(char *cmd1, char *cmd2);
 int syscall_cat(char *argv);
@@ -180,4 +187,13 @@ static struct ls_info // ls 信息
     int is_l;       // 是否带-l参数
     char path[256]; // 路径名字
 } ls_info;
+
+static struct mk_info // ls 信息
+{
+    int is_p;       // 是否带-a参数
+    int is_m;       // 是否带-l参数
+    char path[256]; // 路径名字
+    mode_t mode;   // 权限
+} mk_info;
+
 #endif
