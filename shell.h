@@ -14,6 +14,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <time.h>
+#include <wait.h>
 
 extern char history[100][128];
 extern int history_total;
@@ -29,6 +30,9 @@ extern char promat[512];
 #define SYS_MV 7
 #define SYS_MKDIR 8
 #define SYS_TREE 9
+#define SYS_PIPE 11
+#define SYS_CAT 12
+#define SYS_CLEAR 13
 #define SYS_HISTORY 99
 
 #define MAX_INPUT_SIZE 1024
@@ -47,6 +51,7 @@ int copy_folder(char *src, char *dest);
 void remove_dir(char *path);
 void get_file_path(const char *path, const char *filename, char *filepath);
 void tree(char *direntName, int level, int is_a);
+void cat_file(const char *file);
 
 // shell命令函数声明
 void syscall_history();
@@ -60,6 +65,9 @@ void syscall_rm(char *src, char *arg1);
 void syscall_mv(char *src, char *dest);
 void syscall_mkdir(char *name);
 void syscall_tree(char *args0, char *args1);
+void syscall_pipe(char *cmd1, char *cmd2);
+int syscall_cat(char *argv);
+void syscall_clear();
 
 // shell函数注册
 static const syscall_handler_t sys_table[] = {
@@ -74,6 +82,9 @@ static const syscall_handler_t sys_table[] = {
     [SYS_MV] = (syscall_handler_t)syscall_mv,
     [SYS_MKDIR] = (syscall_handler_t)syscall_mkdir,
     [SYS_TREE] = (syscall_handler_t)syscall_tree,
+    [SYS_PIPE] = (syscall_handler_t)syscall_pipe,
+    [SYS_CAT] = (syscall_handler_t)syscall_cat,
+    [SYS_CLEAR] = (syscall_handler_t)syscall_clear,
 
 };
 
@@ -129,6 +140,18 @@ static const shell cmd_list[] = {
     {
         .name = "tree",
         .id = SYS_TREE,
+    },
+    {
+        .name = "|",
+        .id = SYS_PIPE,
+    },
+    {
+        .name = "cat",
+        .id = SYS_CAT,
+    },
+    {
+        .name = "clear",
+        .id = SYS_CLEAR,
     },
 };
 
