@@ -30,11 +30,11 @@
 ### How to use
 使用命令
 ```
-gcc *.c
+gcc main.c -I ./src src/*/*.c
 ```
 或者
 ```
-clang *.c
+clang main.c -I ./src src/*/*.c
 ```
 将会得到`a.out`文件
 运行文件
@@ -73,20 +73,18 @@ void syscall_history();
 其中name是命令的名字，id是刚刚定义的宏
 </br>
 
-5. 前往`shell.c`中实现刚刚注册函数
-```
-void syscall_history()
-{
-    FUNCTION_CODE_HERE;
-}
-```
-</br>
-
-6. 如果需要定义一些辅助函数，建议在`shell.h`中的最上方的声明。辅助函数定义最好在`shell.c`的最下面，`shell.c`上半区是命令定义，下半区是辅助函数定义
+5. 前往文件夹`./src`中新建一个文件夹,其中包含函数定义的`.c`文件，以及相关声明的`.h`头文件
 
 </br>
 
-1. 对于一些全局使用的变量，请使用`static`关键字声明，然后在别的文件要使用的话请使用`extern`关键字声明，或者`include`文件，否则会有`duplication`重复定义的错误
+6. 在`shell.h`中包含此命令的`.h`头文件
+
+</br>
+
+7. 如果需要定义一些全局变量，在`.h`头文件中用extern声明，在`.c`中定义
+
+</br>
+
 
 
 ### 图标
@@ -96,7 +94,7 @@ void syscall_history()
 ```
 ![](imgs/1.png)
 
-但我只做了苹果的图标，因此理论上只有苹果用户可以看见，Linux用户请前往`main.c`中约15行位置，即`while`循环里第一个`printf`处，将苹果图标进行替换。（实际上可以读取环境信息做到自适应，但是我不想做+__+）
+但只做了苹果的图标，因此理论上只有苹果用户可以看见，Linux用户请前往`main.c`中约13行位置，即`while`循环里第一个`printf`处，将苹果图标进行替换。同时需要下载`hack nerd font`字体
 ## TODO：
 > ps 命令 待整合
 > 

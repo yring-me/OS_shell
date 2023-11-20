@@ -16,9 +16,23 @@
 #include <time.h>
 #include <sys/wait.h>
 
-extern char history[100][128];
-extern int history_total;
-extern char promat[512];
+// 各模块头文件，如果有
+#include "../src/cat/cat.h"
+#include "../src/cd/cd.h"
+#include "../src/clear/clear.h"
+#include "../src/cp/cp.h"
+#include "../src/help_man/help_man.h"
+#include "../src/history/history.h"
+#include "../src/promat/promat.h"
+#include "../src/ls/ls.h"
+#include "../src/mkdir/mkdir.h"
+#include "../src/mv/mv.h"
+#include "../src/parse/parse.h"
+#include "../src/pipe/pipe.h"
+#include "../src/promat/promat.h"
+#include "../src/pwd/pwd.h"
+#include "../src/rm/rm.h"
+#include "../src/tree/tree.h"
 
 #define SYS_HELP 0
 #define SYS_MAN 1
@@ -38,29 +52,6 @@ extern char promat[512];
 #define MAX_INPUT_SIZE 1024
 // 函数指针，用于抽象，统一调用
 typedef int (*syscall_handler_t)(char *, char *, char *, char *);
-
-// 其他辅助函数
-void ls_info_check(char *args0, const char *agrs1, const char *args2);
-void ls_info_reset();
-void ls_info_init();
-void ls_l();
-void ls();
-void set_promat();
-int copy_file(char *src, char *dest);
-int copy_folder(char *src, char *dest);
-void remove_dir(char *path);
-void get_file_path(const char *path, const char *filename, char *filepath);
-void tree(char *direntName, int level, int is_a);
-
-void cat();
-void cat_info_check(char *args0, const char *args1, const char *args2);
-void cat_info_init();
-void cat_info_reset();
-
-void mkdir_recursive(const char *path, mode_t mode);
-void mkdir_info_check(char *args0, char *args1, char *args2, char *args3, char *args4);
-void mk_info_reset();
-void mk_info_init();
 
 // shell命令函数声明
 void syscall_history();
@@ -163,46 +154,5 @@ static const shell cmd_list[] = {
         .id = SYS_CLEAR,
     },
 };
-
-static struct redir_info // 重定向信息
-{
-    int is_input_redir;        // 是否为输入重定向
-    int is_output_redir;       // 是否为输出重定向
-    int out_flag;              // 输出重定向方式
-    int out_fd;                // 输出重定向文件描述符
-    char out_backup_name[128]; // 临时文件缓冲区
-    char in_file_name[128];    // 输入文件名字
-    char out_file_name[128];   // 输出文件名字
-} redir_info;
-
-static struct old_fd // 原有重定向信息
-{
-    int stdin_fd;  // 原有标准输入描述符
-    int stdout_fd; // 原有标准输出描述符
-    int sterr_fd;  // 原有标准错误描述符
-} old_fd;
-
-static struct ls_info // ls 信息
-{
-    int is_a;       // 是否带-a参数
-    int is_l;       // 是否带-l参数
-    char path[256]; // 路径名字
-} ls_info;
-
-static struct mk_info // ls 信息
-{
-    int is_p;       // 是否带-a参数
-    int is_m;       // 是否带-l参数
-    char path[256]; // 路径名字
-    mode_t mode;    // 权限
-} mk_info;
-
-static struct cat_info
-{
-    int nflag;
-    int bflag;
-    int num;
-    char file[256];
-} cat_info;
 
 #endif

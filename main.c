@@ -1,10 +1,12 @@
-#include "main.h"
+#include "./include/main.h"
+extern char promat[512];
 int main()
 {
     int size = 1024;
     char *buffer = (char *)malloc(size); // 用于命令输入
 
     set_promat(); // 设置shell格式
+
     while (1)
     {
         memset(buffer, 0, 1024);

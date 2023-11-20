@@ -1,14 +1,9 @@
-#include <stdio.h>
-#include <string.h>
-#include "shell.h"
+#include "parse.h"
 
-char args[10][128] = {0};
-char history[100][128] = {0};
-int history_total = -1;
-void dispatcher();
-void redir_init();
-void clean_buffer();
+char args[10][128];
 
+struct redir_info redir_info;
+struct old_fd old_fd;
 void parse_buffer(char *buffer_in)
 {
 
@@ -121,6 +116,7 @@ void parse_redir()
         {
             redir_info.is_output_redir = 1;
             redir_info.out_flag = O_RDWR | O_CREAT | O_TRUNC;
+
             sprintf(redir_info.out_file_name, "%s", args[i + 1]);
 
             int fd;
@@ -153,7 +149,7 @@ void redir_init()
 {
     memset(redir_info.in_file_name, 0, sizeof(redir_info.in_file_name));   // 输入重定向初始化
     memset(redir_info.out_file_name, 0, sizeof(redir_info.out_file_name)); // 输出重定义初始化
-    sprintf(redir_info.out_backup_name, "%s", "./temp/used_for_>>_redir"); // 用于临时保存信息，需要对转义字符处理
+    sprintf(redir_info.out_backup_name, "%s", "/tmp/used_for_>>_redir");   // 用于临时保存信息，需要对转义字符处理
     redir_info.is_input_redir = 0;                                         // 是否重定向输入
     redir_info.is_output_redir = 0;                                        // 是否重定向输出
     redir_info.out_flag = 0;                                               // 重定向输出方式
