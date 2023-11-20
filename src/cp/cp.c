@@ -1,38 +1,96 @@
 #include "cp.h"
+#include <dirent.h>
 
-int syscall_cp(char *src, char *dest)
+int syscall_cp(char *args0, char *args1, char *args2)
 {
-
-    struct stat file_stat;
-    if (stat(src, &file_stat) == -1) // 文件不存在
+    // -r 复制目录
+    if (strcmp(args0, "-r") == 0)
     {
-        printf("\x1b[31mError:dirctory no exist\x1b[0m\n");
-        return -1;
-    }
-
-    if (strlen(src) == 0 || strlen(dest) == 0) // 源文件或目的不存在
-    {
-        printf("\x1b[31mUsage:cp <src_file>  <dest_file>\x1b[0m\n");
-        return -1;
-    }
-
-    if (S_ISDIR(file_stat.st_mode) == 1)
-    {
-        if (copy_folder(src, dest) == -1) // 复制文件夹
+        if(strlen(args1) == 0 || strlen(args2) == 0)
+        {
+            printf("\x1b[33mUse cp -r <dir1> <dir2> to copy directory");
             return -1;
-    }
-
-    else if (S_ISREG(file_stat.st_mode) == 1)
-    {
-        if (copy_file(src, dest) == -1) // 复制文件
+        }
+        struct stat info1;
+        if (stat(args1, &info1) == 0) 
+        {         
+            if (S_ISDIR(info1.st_mode)) //args1是目录
+            { 
+                if (copy_folder(args1, args2) == -1) // 复制文件夹
+                return -1;
+            } 
+            else 
+            {
+                printf("Use cp <file> <dir> to copy file; cp -r <dir1> <dir2> to copy directory");
+                return -1;
+            }
+        }
+        else
+        {
+            printf("\x1b[31mError:dirctory no exist\x1b[0m\n");
             return -1;
+        }
+    } 
+    else  //不是-r选项，复制文件
+    {
+        if (strlen(args0) == 0 || strlen(args1) == 0)
+        {
+            printf("Use cp <file> <dir> to copy file; cp -r <dir1> <dir2> to copy directory");
+            return -1;
+        }
+        struct stat info0;
+        struct stat info1;
+        if (stat(args0, &info0) == 0) //args0存在
+        {
+            if (S_ISREG(info0.st_mode)) //args0是文件 
+            {
+                if (stat(args1, &info1) == 0) //args1存在
+                {
+                    if(S_ISDIR(info1.st_mode)) //args1是目录
+                    {
+                        if (copy_file_to_dir(args0, args1) == -1) // 复制文件到目录下
+                            return -1;
+                    }
+                    else{
+                        printf("Use cp <file> <dir> to copy file; cp -r <dir1> <dir2> to copy directory");
+                        return -1;
+                    }
+                }
+                else //args1不存在，当作文件来处理
+                {
+                    if (copy_file_to_file(args0, args1) == -1) // 复制文件到文件
+                        return -1;
+                }                
+            }
+            else{
+                printf("Use cp <file> <dir> to copy file; cp -r <dir1> <dir2> to copy directory");
+                return -1;
+            }
+        }
+        else
+        {
+            printf("\x1b[31mError:file no exist\x1b[0m\n");
+            return -1;
+        }
     }
-
     return 0;
 }
 
-// 复制文件
-int copy_file(char *src, char *dest)
+
+// 复制文件到目录
+int copy_file_to_dir(char *src, char *dest){
+    char dest_path[1024];
+    // 构建目标地址：dest/src
+    bzero(dest_path, sizeof(dest_path));
+    sprintf(dest_path, "%s/%s", dest, strrchr(src, '/')+1);
+    printf("copy to %s\n", dest_path);
+    if (copy_file_to_file(src, dest_path) == -1) // 复制文件到文件
+        return -1;
+    return 0;
+}
+
+// 复制文件到文件
+int copy_file_to_file(char *src, char *dest)
 {
     FILE *fps, *fpd; // 源文件 目标文件
     int ch;
@@ -75,35 +133,38 @@ int copy_folder(char *src, char *dest)
     char newsrcPath[4096];
     char newdestPath[4096];
 
-    if (mkdir(dest, 0777)) // 如果不存在就用mkdir函数来创建
-    {
-        printf("\x1b[31mfile has exited\x1b[0m\n");
-        return -1;
-    }
+    struct stat info;
+    if (stat(dest, &info) != 0)  // 目录不存在就创建目录
+        mkdir(dest, 0777);
+
+    printf("copy to %s to %s\n", src, dest);
 
     DIR *srcDp = opendir(src);
     if (srcDp == NULL)
     {
-        printf("\x1b[31mfaile to open %s\x1b[0m\n", src);
+        printf("\x1b[31mfailed to open %s\x1b[0m\n", src);
         return -1;
     }
-    struct dirent *srcDirent = NULL;
-    int flag = 0;
-    while ((srcDirent = readdir(srcDp)) != NULL)
+    struct dirent *entry = NULL;
+    while ((entry = readdir(srcDp)) != NULL)
     {
-        flag++;
-        if (flag > 2) // 去除隐藏文件 . ..
-        {
+        if (entry->d_type == DT_REG) {
+            // 普通文件
             bzero(newsrcPath, sizeof(newsrcPath)); // 清空
             bzero(newdestPath, sizeof(newdestPath));
+            sprintf(newsrcPath, "%s/%s", src, entry->d_name); // 保存新的文件路径
+            sprintf(newdestPath, "%s/%s", dest, entry->d_name);
 
-            sprintf(newsrcPath, "%s/%s", src, srcDirent->d_name); // 保存新的文件路径
-            sprintf(newdestPath, "%s/%s", dest, srcDirent->d_name);
+            copy_file_to_file(newsrcPath, newdestPath);
+        } 
+        else if (entry->d_type == DT_DIR && strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+            // 子目录，递归处理
+            bzero(newsrcPath, sizeof(newsrcPath)); // 清空
+            bzero(newdestPath, sizeof(newdestPath));
+            sprintf(newsrcPath, "%s/%s", src, entry->d_name); // 保存新的文件路径
+            sprintf(newdestPath, "%s/%s", dest, entry->d_name);
 
-            if (srcDirent->d_type == DT_DIR) // 文件夹的拷贝
-                copy_folder(newsrcPath, newdestPath);
-            else // 普通文件
-                copy_file(newsrcPath, newdestPath);
+            copy_folder(newsrcPath, newdestPath);
         }
     }
     return 0;

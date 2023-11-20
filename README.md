@@ -111,6 +111,14 @@ void syscall_history();
 > cd新增：cd ～ 切换到home目录
 > 
 > mkdir新增：创建多个目录、-p递归创建、-m设置权限、忽略已存在目录
+>
+> 修改cp,支持：
+> cp 1.txt 2.txt / cp 1.txt dir/2.txt ： 复制并重命名文件
+> cp 1.txt dir ： 复制文件到制定目录下
+> cp -r dir1 dir2 ： 复制目录1到目录2（dir2不存在就新建，存在就复制到dir2下）
+> 分3个辅助函数：copy_file_to_dir、copy_file_to_file、copy_folder
 
+## 调试TUDO：
+> rm mv 与cp有关的部分
 
 
