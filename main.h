@@ -1,6 +1,10 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
 char promat[512] = {};
 
 extern char history[100][128];

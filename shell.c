@@ -39,6 +39,7 @@ void syscall_man()
 
 void syscall_ls(char *args0, const char *agrs1, const char *args2)
 {
+    ls_info_init();                     // ls信息初始化
     ls_info_check(args0, agrs1, args2); // 处理参数信息，并把相关信息赋值给ls_info结构体
     if (ls_info.is_l == 1)
         ls_l(); // 带 -l 参数

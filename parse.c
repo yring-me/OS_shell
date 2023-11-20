@@ -6,6 +6,8 @@ char args[10][128] = {0};
 char history[100][128] = {0};
 int history_total = -1;
 void dispatcher();
+void redir_init();
+void clean_buffer();
 
 void parse_buffer(char *buffer_in)
 {
@@ -55,6 +57,7 @@ void dispatcher()
     syscall_handler_t handler = sys_table[id];
     handler(args[1], args[2], args[3], args[4]);
     memset(args, 0, sizeof(args));
+    clean_buffer();
 }
 
 // 检查命令是否存在
@@ -85,6 +88,7 @@ int check_cmd()
 // 检测命令中是否有重定向符号
 void parse_redir()
 {
+    redir_init();
     for (int i = 0; i < 9; i++)
     {
 
