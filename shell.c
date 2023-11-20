@@ -47,14 +47,51 @@ void syscall_ls(char *args0, const char *agrs1, const char *args2)
     ls_info_reset(); // 重置ls_info结构体
 }
 
-// void syscall_mkdir(char *name)
-// {
-//     mkdir(name, 0777);
-// }
+void syscall_mkdir(char *args0, char *args1, char *args2, char *args3, char *args4)
+{
+    // mkdir(name, 0777);
+    mk_info_init();
+    mkdir_info_check(args0, args1, args2, args3, args4);
+    if (mk_info.is_p == 1)
+    {
+        mkdir_recursive(mk_info.path, mk_info.mode);
+    }
+    else
+    {
+        if (strlen(args0) != 0 && strcmp(args0, "-m") != 0)
+        {
+            if (mkdir(args0, mk_info.mode) == -1)
+                fprintf(stderr, "Failed to create directory: %s\n", args0);
+        }
+        if (strlen(args1) != 0 && strcmp(args0, "-m") != 0)
+        {
+            if (mkdir(args1, mk_info.mode) == -1)
+                fprintf(stderr, "Failed to create directory: %s\n", args1);
+        }
+        if (strlen(args2) != 0 && strcmp(args2, "-m") != 0)
+        {
+            if (mkdir(args2, mk_info.mode) == -1)
+                fprintf(stderr, "Failed to create directory: %s\n", args2);
+        }
+        if (strlen(args3) != 0 && strcmp(args2, "-m") != 0)
+        {
+            if (mkdir(args3, mk_info.mode) == -1)
+                fprintf(stderr, "Failed to create directory: %s\n", args3);
+        }
+        if (strlen(args4) != 0)
+        {
+            if (mkdir(args4, mk_info.mode) == -1)
+                fprintf(stderr, "Failed to create directory: %s\n", args4);
+        }
+    }
+
+    mk_info_reset();
+}
 
 void syscall_cd(char *path)
 {
-    if(strcmp(path, "~") == 0){
+    if (strcmp(path, "~") == 0)
+    {
         path = getenv("HOME");
     }
 
@@ -183,6 +220,63 @@ void syscall_tree(char *args0, char *args1)
     tree(path, 0, is_a);
 }
 
+void syscall_pipe(char *cmd1, char *cmd2)
+{
+    int fd[2];
+    pid_t pid1, pid2;
+
+    if (pipe(fd) < 0)
+    {
+        perror("pipe error");
+        exit(1);
+    }
+
+    if ((pid1 = fork()) < 0)
+    {
+        perror("fork error");
+        exit(1);
+    }
+    else if (pid1 == 0)
+    {
+        close(fd[0]);
+        dup2(fd[1], STDOUT_FILENO);
+        system(cmd1);
+        exit(0);
+    }
+
+    if ((pid2 = fork()) < 0)
+    {
+        perror("fork error");
+        exit(1);
+    }
+    else if (pid2 == 0)
+    {
+        close(fd[1]);
+        dup2(fd[0], STDIN_FILENO);
+        system(cmd2);
+        exit(0);
+    }
+
+    close(fd[0]);
+    close(fd[1]);
+    waitpid(pid1, NULL, 0);
+    waitpid(pid2, NULL, 0);
+}
+
+int syscall_cat(char *args0, char *args1, char *args2)
+{
+    cat_info_init();
+    cat_info_check(args0, args1, args2);
+    cat();
+    cat_info_reset();
+    return 0;
+}
+
+void syscall_clear()
+{
+    system("clear");
+}
+
 // 处理 ls 的参数信息
 void ls_info_check(char *args0, const char *args1, const char *args2)
 {
@@ -291,7 +385,7 @@ void ls_l()
         }
 
         // 输出文件信息：根据获取到的文件信息，使用 printf 函数输出文件的详细信息
-        printf("%c%3s%3s%3s %5lu %s %s %10ld %s ",
+        printf("%c%3s%3s%3s %5hu %s %s %10lld %s ",
                file_type,
                perm[(file_stat.st_mode & mask) >> 2 * 3],
                perm[(file_stat.st_mode & (mask >> 3)) >> 1 * 3],
@@ -568,126 +662,133 @@ void tree(char *direntName, int level, int is_a)
     closedir(p_dir);
 }
 
-
-void syscall_pipe(char *cmd1, char *cmd2) {
-    int fd[2];
-    pid_t pid1, pid2;
-
-    if (pipe(fd) < 0) {
-        perror("pipe error");
-        exit(1);
-    }
-
-    if ((pid1 = fork()) < 0) {
-        perror("fork error");
-        exit(1);
-    } else if (pid1 == 0) {
-        close(fd[0]);
-        dup2(fd[1], STDOUT_FILENO);
-        system(cmd1);
-        exit(0);
-    }
-
-    if ((pid2 = fork()) < 0) {
-        perror("fork error");
-        exit(1);
-    } else if (pid2 == 0) {
-        close(fd[1]);
-        dup2(fd[0], STDIN_FILENO);
-        system(cmd2);
-        exit(0);
-    }
-
-    close(fd[0]);
-    close(fd[1]);
-    waitpid(pid1, NULL, 0);
-    waitpid(pid2, NULL, 0);
-}
-
-int bflag, nflag, num;
-void cat_file(const char *file) {
+// cat 命令主体
+void cat()
+{
     FILE *fp;
-    if((fp = fopen(file, "r")) == NULL) {//判断是不是空文件
-        //打印错误信息
-        perror(file);
-        exit(1);
+    if ((fp = fopen(cat_info.file, "r")) == NULL)
+    { // 判断是不是空文件
+        // 打印错误信息
+        perror(cat_info.file);
+        return;
     }
     char buff[1024] = {0};
-    while(fgets(buff, sizeof(buff), fp)) {//按行读取
-        //都不成立 直接打印
-        if(!nflag && !bflag) {
+    while (fgets(buff, sizeof(buff), fp))
+    { // 按行读取
+        // 都不成立 直接打印
+        if (!cat_info.nflag && !cat_info.bflag)
+        {
             printf("%s", buff);
             continue;
         }
-        if(buff[0] != '\n'){ 
-            num++;
-            printf("%d\t%s", num, buff);
-        }else {
-            //nflag成立 打印行号 不成立 不打印行号
-            if(nflag && !bflag) {
-                num++;
-                printf("%d\t\n", num);
-            }else {
+        if (buff[0] != '\n')
+        {
+            cat_info.num++;
+            printf("%d\t%s", cat_info.num, buff);
+        }
+        else
+        {
+            // nflag成立 打印行号 不成立 不打印行号
+            if (cat_info.nflag && !cat_info.bflag)
+            {
+                cat_info.num++;
+                printf("%d\t\n", cat_info.num);
+            }
+            else
+            {
                 printf("\n");
             }
         }
     }
-    fclose(fp);//关闭文件
-    return ;
+    fclose(fp); // 关闭文件
+    return;
 }
-int cat(int argc, char *argv) {
-    char c;
-    while((c = getopt(argc, argv, "bn")) != -1) {//判断命令行参数
-        switch(c) {
-            case 'b':
-                bflag = 1;
-                break;
-            case 'n':
-                nflag = 1;
-                break;
-            default :
-                fprintf(stdout, "Use : %s [-b|-n] file!\n", argv[0]);
-                exit(1);
-        }
+
+// 处理 cat 的参数信息
+void cat_info_check(char *args0, const char *args1, const char *args2)
+{
+    // 检查是否为合法参数，但只警告
+    cat_info.num = 0;
+    if (args0[0] == '-' && strcmp(args0, "-b") != 0 && strcmp(args0, "-n") != 0)
+        printf("\x1b[33mWarning Invalid Arguments %s\x1b[0m\n", args0);
+    if (args1[0] == '-' && strcmp(args1, "-b") != 0 && strcmp(args1, "-n") != 0)
+        printf("\x1b[33mWarning Invalid Arguments %s\x1b[0m\n", args1);
+    if (args2[0] == '-' && strcmp(args2, "-b") != 0 && strcmp(args2, "-n") != 0)
+        printf("\x1b[33mWarning Invalid Arguments %s\x1b[0m\n", args2);
+
+    // 检查有 -b 或者 -n 标志
+    if (strcmp(args0, "-b") == 0 || strcmp(args1, "-b") == 0 || strcmp(args2, "-b") == 0)
+        cat_info.bflag = 1;
+    if (strcmp(args0, "-n") == 0 || strcmp(args1, "-n") == 0 || strcmp(args2, "-n") == 0)
+        cat_info.nflag = 1;
+    if (cat_info.bflag == 1 && cat_info.nflag == 1)
+    {
+        printf("\x1b[33mWarning Conflict Arguments -b -n \x1b[0m\n");
+        cat_info.nflag = 0;
+        cat_info.bflag = 0;
     }
-    
-    cat_file(argv);    
-    return 0;
+
+    // 处理路径信息
+    if (strlen(args2) != 0 && args2[0] != '-')
+        sprintf(cat_info.file, "%s", args2);
+
+    if (strlen(args1) != 0 && args1[0] != '-')
+    {
+        memset(ls_info.path, 0, sizeof(ls_info.path));
+        sprintf(cat_info.file, "%s", args1);
+    }
+
+    if (strlen(args0) != 0 && args0[0] != '-')
+    {
+        memset(ls_info.path, 0, sizeof(ls_info.path));
+        sprintf(cat_info.file, "%s", args0);
+    }
 }
-int syscall_cat(char *name){
-    cat(1, name);
-    return 0;
+
+void cat_info_init()
+{
+    cat_info.bflag = 0;
+    cat_info.nflag = 0;
+    cat_info.num = 0;
+    memset(cat_info.file, 0, sizeof(cat_info.file));
 }
 
-void syscall_clear(){
-    system("clear");
+void cat_info_reset()
+{
+    cat_info.bflag = 0;
+    cat_info.nflag = 0;
+    cat_info.num = 0;
+    memset(cat_info.file, 0, sizeof(cat_info.file));
 }
-
-
-
 
 // 递归创建目录
-int mkdir_recursive(const char *path, mode_t mode) {
+void mkdir_recursive(const char *path, mode_t mode)
+{
     char *p = NULL;
     char *temp_path = strdup(path); // 使用strdup复制路径，以免修改原始路径字符串
 
     // 逐级创建目录
-    for (p = strchr(temp_path + 1, '/'); p; p = strchr(p + 1, '/')) {
-        *p = '\0';  // 截断路径字符串
-        if (mkdir(temp_path, mode) == -1) {
+    for (p = strchr(temp_path + 1, '/'); p; p = strchr(p + 1, '/'))
+    {
+        *p = '\0'; // 截断路径字符串
+        if (mkdir(temp_path, mode) == -1)
+        {
             // 如果目录已存在，忽略错误
-            if (errno != EEXIST) {
+            if (errno != EEXIST)
+            {
                 perror("mkdir");
                 exit(EXIT_FAILURE);
             }
         }
-        *p = '/';  // 恢复路径字符串
+        *p = '/'; // 恢复路径字符串
     }
 
     // 创建最终目录
-    if (mkdir(temp_path, mode) == -1) {
+    if (mkdir(temp_path, mode) == -1)
+    {
         // 如果目录已存在，忽略错误
-        if (errno != EEXIST) {
+        if (errno != EEXIST)
+        {
             perror("mkdir");
             exit(EXIT_FAILURE);
         }
@@ -696,96 +797,73 @@ int mkdir_recursive(const char *path, mode_t mode) {
     free(temp_path); // 释放分配的内存
 }
 
-
-void syscall_mkdir(char *args0, char *args1, char *args2, char *args3, char *args4)
-{
-    // mkdir(name, 0777);
-    mk_info_init();
-    mkdir_info_check(args0, args1, args2, args3, args4); 
-    if (mk_info.is_p == 1){
-        mkdir_recursive(mk_info.path, mk_info.mode);
-    }     
-    else{
-        if(strlen(args0) != 0 && strcmp(args0, "-m") != 0){                
-        if(mkdir(args0, mk_info.mode) == -1)
-            fprintf(stderr, "Failed to create directory: %s\n", args0);
-        }
-        if(strlen(args1) != 0 && strcmp(args0, "-m") != 0){
-            if(mkdir(args1, mk_info.mode) == -1)
-                fprintf(stderr, "Failed to create directory: %s\n", args1);
-        }
-        if(strlen(args2) != 0 && strcmp(args2, "-m") != 0){
-            if(mkdir(args2, mk_info.mode) == -1)
-                fprintf(stderr, "Failed to create directory: %s\n", args2);
-        }
-        if(strlen(args3) != 0 && strcmp(args2, "-m") != 0){
-            if(mkdir(args3, mk_info.mode) == -1)
-                fprintf(stderr, "Failed to create directory: %s\n", args3);
-        }
-        if(strlen(args4) != 0){
-            if(mkdir(args4, mk_info.mode) == -1)
-                fprintf(stderr, "Failed to create directory: %s\n", args4);
-        }
-    } 
-          
-    mk_info_reset();   
-}
-
 void mkdir_info_check(char *args0, char *args1, char *args2, char *args3, char *args4)
 {
-    if (args0[0] == '-' && strcmp(args0, "-p") != 0 && strcmp(args0, "-m") != 0 )
+    if (args0[0] == '-' && strcmp(args0, "-p") != 0 && strcmp(args0, "-m") != 0)
         printf("\x1b[33mWarning Invalid Arguments %s\x1b[0m\n", args0);
     if (args2[0] == '-' && strcmp(args2, "-p") != 0 && strcmp(args2, "-m") != 0)
         printf("\x1b[33mWarning Invalid Arguments %s\x1b[0m\n", args2);
 
     // 检查有 -p 或者 -m 标志
-    if (strcmp(args0, "-p") == 0){
+    if (strcmp(args0, "-p") == 0)
+    {
         mk_info.is_p = 1;
-        if (mk_info.is_p == 1 && strlen(args1) != 0 && args1[0] != '-'){
+        if (mk_info.is_p == 1 && strlen(args1) != 0 && args1[0] != '-')
+        {
             memset(mk_info.path, 0, sizeof(mk_info.path));
             sprintf(mk_info.path, "%s", args1);
-        }   
-        else{
+        }
+        else
+        {
             printf("\x1b[31muse -p <dir> to make dir.\x1b[0m\n");
             return;
-        }     
+        }
     }
 
-    if (strcmp(args2, "-p") == 0){
+    if (strcmp(args2, "-p") == 0)
+    {
         mk_info.is_p = 1;
-        if (mk_info.is_p == 1 && strlen(args3) != 0 && args3[0] != '-'){
+        if (mk_info.is_p == 1 && strlen(args3) != 0 && args3[0] != '-')
+        {
             memset(mk_info.path, 0, sizeof(mk_info.path));
             sprintf(mk_info.path, "%s", args3);
-        }  
-        else{
+        }
+        else
+        {
             printf("\x1b[31muse -p <dir> to make dir.\x1b[0m\n");
             return;
-        }     
+        }
     }
 
-    if (strcmp(args0, "-m") == 0){
+    if (strcmp(args0, "-m") == 0)
+    {
         mk_info.is_m = 1;
-        if (mk_info.is_m == 1 && strlen(args1) != 0 && args1[0] != '-'){
+        if (mk_info.is_m == 1 && strlen(args1) != 0 && args1[0] != '-')
+        {
             long tmp = strtol(args1, NULL, 8);
             mk_info.mode = (mode_t)tmp;
-        }  
-        else{
+        }
+        else
+        {
             printf("\x1b[31muse -p <dir> to make dir.\x1b[0m\n");
             return;
-        }      
+        }
     }
-        
-    if (strcmp(args2, "-m") == 0){
+
+    if (strcmp(args2, "-m") == 0)
+    {
         mk_info.is_m = 1;
-        if (mk_info.is_m == 1 && strlen(args3) != 0 && args3[0] != '-'){
+        if (mk_info.is_m == 1 && strlen(args3) != 0 && args3[0] != '-')
+        {
             long tmp = strtol(args3, NULL, 8);
             mk_info.mode = (mode_t)tmp;
-        }    
-        else{
+        }
+        else
+        {
             printf("\x1b[31muse -p <dir> to make dir.\x1b[0m\n");
             return;
-        }    
-    }  
+        }
+    }
 }
 
 // 重置 mk_info 信息
@@ -807,5 +885,3 @@ void mk_info_init()
     sprintf(mk_info.path, "%s", ".");
     mk_info.mode = 0777;
 }
-
-

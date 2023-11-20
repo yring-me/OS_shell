@@ -14,7 +14,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <time.h>
-#include <wait.h>
+#include <sys/wait.h>
 
 extern char history[100][128];
 extern int history_total;
@@ -51,15 +51,16 @@ int copy_folder(char *src, char *dest);
 void remove_dir(char *path);
 void get_file_path(const char *path, const char *filename, char *filepath);
 void tree(char *direntName, int level, int is_a);
-void cat_file(const char *file);
-int cat(int argc, char *argv);
 
-int mkdir_recursive(const char *path, mode_t mode) ;
+void cat();
+void cat_info_check(char *args0, const char *args1, const char *args2);
+void cat_info_init();
+void cat_info_reset();
+
+void mkdir_recursive(const char *path, mode_t mode);
 void mkdir_info_check(char *args0, char *args1, char *args2, char *args3, char *args4);
 void mk_info_reset();
 void mk_info_init();
-
-
 
 // shell命令函数声明
 void syscall_history();
@@ -74,7 +75,7 @@ void syscall_mv(char *src, char *dest);
 void syscall_mkdir(char *args0, char *args1, char *args2, char *args3, char *args4);
 void syscall_tree(char *args0, char *args1);
 void syscall_pipe(char *cmd1, char *cmd2);
-int syscall_cat(char *argv);
+int syscall_cat(char *args0, char *args1, char *args2);
 void syscall_clear();
 
 // shell函数注册
@@ -193,7 +194,15 @@ static struct mk_info // ls 信息
     int is_p;       // 是否带-a参数
     int is_m;       // 是否带-l参数
     char path[256]; // 路径名字
-    mode_t mode;   // 权限
+    mode_t mode;    // 权限
 } mk_info;
+
+static struct cat_info
+{
+    int nflag;
+    int bflag;
+    int num;
+    char file[256];
+} cat_info;
 
 #endif
