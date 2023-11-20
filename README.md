@@ -104,5 +104,12 @@ void syscall_history()
 >
 > 后台运行程序
 
+## 调试进展： 
+> 已完成：history ls cd pwd mkdir tree clear cat
+> 
+> cd新增：cd ～ 切换到home目录
+> 
+> mkdir新增：创建多个目录、-p递归创建、-m设置权限、忽略已存在目录
+
 
 
