@@ -33,6 +33,7 @@
 #include "../src/pwd/pwd.h"
 #include "../src/rm/rm.h"
 #include "../src/tree/tree.h"
+#include "../src/ps/ps.h"
 
 #define SYS_HELP 0
 #define SYS_MAN 1
@@ -47,6 +48,7 @@
 #define SYS_PIPE 11
 #define SYS_CAT 12
 #define SYS_CLEAR 13
+#define SYS_PS 14
 #define SYS_HISTORY 99
 
 #define MAX_INPUT_SIZE 1024
@@ -69,6 +71,7 @@ void syscall_tree(char *args0, char *args1);
 void syscall_pipe(char *cmd1, char *cmd2);
 int syscall_cat(char *args0, char *args1, char *args2);
 void syscall_clear();
+void syscall_ps();
 
 // shell函数注册
 static const syscall_handler_t sys_table[] = {
@@ -86,6 +89,7 @@ static const syscall_handler_t sys_table[] = {
     [SYS_PIPE] = (syscall_handler_t)syscall_pipe,
     [SYS_CAT] = (syscall_handler_t)syscall_cat,
     [SYS_CLEAR] = (syscall_handler_t)syscall_clear,
+    [SYS_PS] = (syscall_handler_t)syscall_ps,
 
 };
 
@@ -153,6 +157,10 @@ static const shell cmd_list[] = {
     {
         .name = "clear",
         .id = SYS_CLEAR,
+    },
+    {
+        .name = "ps",
+        .id = SYS_PS,
     },
 };
 

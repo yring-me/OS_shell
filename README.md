@@ -99,14 +99,12 @@ void syscall_history();
 
 但只做了苹果的图标，因此理论上只有苹果用户可以看见，Linux用户请前往`main.c`中约13行位置，即`while`循环里第一个`printf`处，将苹果图标进行替换。同时需要下载`hack nerd font`字体
 ## TODO：
-> ps 命令 待整合
-> 
 > 管道（顺序问题）
 >
 > 后台运行程序
 
 ## 调试进展： 
-> 已完成：history ls cd pwd mkdir tree clear cat
+> 已完成：history ls cd pwd mkdir tree clear cat ps
 > 
 > cd新增：cd ～ 切换到home目录
 > 
