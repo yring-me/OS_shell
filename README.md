@@ -48,6 +48,7 @@ clang main.c -I ./src src/*/*.c
 #define SYS_HISTORY 99
 ```
 但是注意不要与已有的冲突，除此外是可以随便取的
+
 </br>
 
 2. 在`shell.h`中的`sys_table[]`注册函数
@@ -55,12 +56,14 @@ clang main.c -I ./src src/*/*.c
 [SYS_HISTORY] = (syscall_handler_t)syscall_history,
 ```
 左边是刚刚定义的宏，右边是待实现的函数
+
 </br>
 
 3. 在`shell.h`中添加函数声明
 ```
 void syscall_history();
 ```
+
 </br>
 
 4. 在`shell.h`中的`cmd_list[] `注册命令
@@ -71,6 +74,7 @@ void syscall_history();
 },
 ```
 其中name是命令的名字，id是刚刚定义的宏
+
 </br>
 
 5. 前往文件夹`./src`中新建一个文件夹,其中包含函数定义的`.c`文件，以及相关声明的`.h`头文件
@@ -84,7 +88,6 @@ void syscall_history();
 7. 如果需要定义一些全局变量，在`.h`头文件中用extern声明，在`.c`中定义
 
 </br>
-
 
 
 ### 图标
