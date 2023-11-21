@@ -121,7 +121,7 @@ void ls_l()
         }
 
         // 输出文件信息：根据获取到的文件信息，使用 printf 函数输出文件的详细信息
-        printf("%c%3s%3s%3s %5lu %s %s %10ld %s ",
+        printf("%c%3s%3s%3s %5hu %s %s %10lld %s ",
                file_type,
                perm[(file_stat.st_mode & mask) >> 2 * 3],
                perm[(file_stat.st_mode & (mask >> 3)) >> 1 * 3],
