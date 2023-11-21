@@ -1,15 +1,15 @@
 # OS_shell
 
 ## 目前进展：
-> ls 命令 支持 -l -a 参数
+> ls 命令 支持 -l -a -al/la参数
 > 
-> cd 命令
+> cd 命令 
 > 
-> cp 命令 支持复制文件夹
+> cp 命令 支持复制文件 -r复制文件夹
 > 
 > mv 命令 支持移动、重命名文件，文件夹
 >
-> rm 命令 支持 -r 参数删除文件夹
+> rm 命令 支持 删除文件 -r删除文件夹
 >
 > pwd 命令 
 >
@@ -24,6 +24,10 @@
 > cat 命令 支持读取文件内容
 >
 > clear 清屏
+>
+> mkdir 命令 创建目录 -p递归创建 -m设置权限
+>
+> ps 命令 输出进程信息
 
 ## 一些提醒
 
@@ -115,8 +119,9 @@ void syscall_history();
 > cp 1.txt dir ： 复制文件到制定目录下
 > cp -r dir1 dir2 ： 复制目录1到目录2（dir2不存在就新建，存在就复制到dir2下）
 > 分3个辅助函数：copy_file_to_dir、copy_file_to_file、copy_folder
+>
+> mv 支持文件、目录
 
 ## 调试TUDO：
-> rm mv 与cp有关的部分
 
 
