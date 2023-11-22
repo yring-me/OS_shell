@@ -34,6 +34,7 @@
 #include "../src/rm/rm.h"
 #include "../src/tree/tree.h"
 #include "../src/ps/ps.h"
+#include "../src/diret/diret.h"
 
 #define SYS_HELP 0
 #define SYS_MAN 1
@@ -52,6 +53,20 @@
 #define SYS_HISTORY 99
 
 #define MAX_INPUT_SIZE 1024
+
+#define COLOR_RED "\x1b[31m"
+#define COLOR_GREEN "\x1b[32m"
+#define COLOR_YELLOW "\x1b[33m"
+#define COLOR_BLUE "\x1b[34m"
+#define COLOR_MAGENTA "\x1b[35m"
+#define COLOR_CYAN "\x1b[36m"
+#define COLOR_BRIGHT_RED "\x1b[91m"
+#define COLOR_BRIGHT_GREEN "\x1b[92m"
+#define COLOR_BRIGHT_YELLOW "\x1b[93m"
+#define COLOR__BRIGHT_BLUE "\x1b[94m"
+#define COLOR_BRIGHT_MAGENTA "\x1b[95m"
+#define COLOR_BRIGHT_CYAN "\x1b[96m"
+#define COLOR_RESET "\x1b[0m"
 // 函数指针，用于抽象，统一调用
 typedef int (*syscall_handler_t)(char *, char *, char *, char *);
 
