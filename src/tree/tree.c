@@ -1,5 +1,6 @@
 #include "tree.h"
-
+int tree_file = 0;
+int tree_folder = 0;
 void syscall_tree(char *args0, char *args1)
 {
     // 处理 -a 参数，以及默认是当前路径
@@ -22,10 +23,15 @@ void syscall_tree(char *args0, char *args1)
     if (args0[0] != '-' && strlen(path) == 0)
         sprintf(path, "%s", args0);
     printf("%s\n", path);
-    tree(path, 0, is_a);
+    int isLast[1024] = {0}; // 用于记录父节点是不是最后一个文件
+    tree(path, 0, is_a, isLast);
+
+    printf("\x1b[33m%d directories, %d files\x1b[0m", tree_folder, tree_file);
+    tree_folder = 0;
+    tree_file = 0;
 }
 
-void tree(char *direntName, int level, int is_a)
+void tree(char *direntName, int level, int is_a, int isLast[])
 {
     // 定义一个目录流指针
     DIR *p_dir = NULL;
@@ -33,70 +39,67 @@ void tree(char *direntName, int level, int is_a)
     // 定义一个目录结构体指针
     struct dirent *entry = NULL;
 
+    // 定义一个数组记录当前目录的所有文件
+    char *entries[1024];
+    int count = 0;
     // 打开目录，返回一个目录流指针指向第一个目录项
     p_dir = opendir(direntName);
+
     if (p_dir == NULL)
     {
         printf("\x1b[31mopendir error\n\x1b[0m");
         return;
     }
 
-    // 循环读取每个目录项, 当返回NULL时读取完毕
     while ((entry = readdir(p_dir)) != NULL)
     {
-        // 备份之前的目录名
-        char *backupDirName = NULL;
-
-        if (is_a == 0 && entry->d_name[0] == '.')
-            continue;
-        else if (is_a == 1 && strcmp(entry->d_name, "..") == 0 || (strcmp(entry->d_name, ".") == 0))
+        if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0)
         {
-            continue;
-        }
+            entries[count] = strdup(entry->d_name);
 
-        int i;
-        for (i = 0; i < level; i++)
-        {
-            printf("│");
-            printf("   ");
-        }
-        int temp = telldir(p_dir);
-        if (readdir(p_dir) == NULL)
-        {
-            printf("└──");
-        }
-        else
-        {
-            printf("├──"); // └
-        }
-
-        if (entry->d_type == DT_DIR)
-            printf("\x1b[96m");
-        else if (entry->d_type == DT_REG)
-            printf("\x1b[32m");
-        printf("%s\n\x1b[0m", entry->d_name);
-
-        // 如果目录项仍是一个目录的话，进入目录
-        if (entry->d_type == DT_DIR)
-        {
-            // 当前目录长度
-            int curDirentNameLen = strlen(direntName) + 1;
-
-            // 备份
-            backupDirName = (char *)malloc(curDirentNameLen);
-            memset(backupDirName, 0, curDirentNameLen);
-            memcpy(backupDirName, direntName, curDirentNameLen);
-
-            strcat(direntName, "/");
-            strcat(direntName, entry->d_name);
-            tree(direntName, level + 1, is_a);
-
-            // 恢复之前的目录名
-            memcpy(direntName, backupDirName, curDirentNameLen);
-            free(backupDirName);
-            backupDirName = NULL;
+            count++;
         }
     }
 
     closedir(p_dir);
+
+    for (int i = 0; i < count; i++)
+    {
+        if (is_a == 0 && entries[i][0] == '.')
+            continue;
+        for (int j = 0; j < level; j++)
+        {
+            printf(isLast[j] ? "    " : "│   "); // 如果是当前子目录的最后一个文件，则需要将前面的树状结构空出来
+        }
+
+        printf("%s ", i == count - 1 ? "└──" : "├──");
+
+        char fullPath[1024];
+        sprintf(fullPath, "%s/%s", direntName, entries[i]);
+        struct stat statbuf;
+        stat(fullPath, &statbuf);
+
+        // 根据文件类型来决定显示结果的颜色
+        if (S_ISDIR(statbuf.st_mode))
+        {
+            printf("%s%s%s\n", "\x1b[34m", entries[i], "\x1b[0m");
+            isLast[level] = (i == count - 1); // 记录当前目录是否为最后一个文件
+            tree(fullPath, level + 1, is_a, isLast);
+            tree_folder++;
+        }
+        else
+        {
+            printf("%s%s%s\n", "\x1b[32m", entries[i], "\x1b[0m");
+            tree_file++;
+        }
+
+        free(entries[i]);
+    }
+}
+
+int insensitiveCompare(const void *a, const void *b)
+{
+    const char *str1 = *(const char **)a;
+    const char *str2 = *(const char **)b;
+    return strcasecmp(str1, str2);
 }
