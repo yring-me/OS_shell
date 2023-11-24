@@ -1,6 +1,6 @@
 #include "parse.h"
 
-char args[10][128];
+char args[10][4096];
 
 struct redir_info redir_info;
 struct old_fd old_fd;

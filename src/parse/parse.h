@@ -7,7 +7,7 @@
 #include "../../include/main.h"
 #include "../../include/shell.h"
 
-extern char args[10][128];
+extern char args[10][4096];
 
 void dispatcher();
 
