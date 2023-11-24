@@ -1,5 +1,5 @@
 #include "./include/main.h"
-extern char promat[512];
+
 int main()
 {
     int size = 1024;
@@ -26,7 +26,8 @@ int main()
         if (check_cmd() == -1) // 检查命令是否合法
             continue;
 
-        parse_redir(); // 检查是否有重定向标志
+        if (parse_redir() == -1)
+            continue; // 检查是否有重定向标志
 
         dispatcher(); // 命令分发
 
