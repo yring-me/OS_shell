@@ -1,0 +1,11 @@
+cat     <file_name>
+cd      <path>
+clear   clean the screen
+cp      <src_file> <dest_file>
+history show cmd used before
+ls      [-l,[-a]]
+mkdir   [-p] [-m] <file_name>
+mv      [-r] <file_name>
+ps      show process info
+rm      <src_file> <dest_file>
+tree    <path>

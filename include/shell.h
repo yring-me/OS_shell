@@ -76,8 +76,8 @@ typedef int (*syscall_handler_t)(char *, char *, char *, char *);
 
 // shell命令函数声明
 void syscall_history();
-void syscall_help(char *args);
-void syscall_man();
+void syscall_help();
+void syscall_man(char *cmd);
 int syscall_ls(char *args0, const char *agrs1, const char *args2);
 int syscall_cd(char *path);
 int syscall_pwd();
