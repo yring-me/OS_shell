@@ -36,6 +36,7 @@
 #include "../src/ps/ps.h"
 #include "../src/redirect/redirect.h"
 #include "../src/functions/function.h"
+#include "../src/background/background.h"
 
 #define SYS_HELP 0
 #define SYS_MAN 1

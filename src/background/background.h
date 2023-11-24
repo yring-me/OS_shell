@@ -5,4 +5,5 @@
 #include "../../include/main.h"
 #include "../../include/shell.h"
 
+int background();
 #endif

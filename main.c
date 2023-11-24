@@ -23,6 +23,10 @@ int main()
 
         parse_buffer(buffer); // 对输入分词
 
+        int back_ret = background();
+        if (back_ret == -1 || back_ret == 1)
+            continue;
+
         int pipe_ret = parse_pipe();
         if (pipe_ret == -1 || pipe_ret == 1)
             continue;
