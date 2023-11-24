@@ -24,11 +24,11 @@ int main()
         parse_buffer(buffer); // 对输入分词
 
         int back_ret = background();
-        if (back_ret == -1 || back_ret == 1)
+        if (back_ret == -1 || back_ret == 1) // 返回1或-1 说明命令执行完成，继续下一轮；否则返回0，说明没有此标志，继续往下执行
             continue;
 
         int pipe_ret = parse_pipe();
-        if (pipe_ret == -1 || pipe_ret == 1)
+        if (pipe_ret == -1 || pipe_ret == 1) // 返回1或-1 说明命令执行完成，继续下一轮；否则返回0，说明没有此标志，继续往下执行
             continue;
 
         if (check_cmd() == -1) // 检查命令是否合法

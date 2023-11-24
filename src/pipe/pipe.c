@@ -4,7 +4,11 @@ struct pipe_info pipe_info;
 
 int parse_pipe()
 {
+    if (check_cmd() == -1) // 检查命令是否合法
+        return -1;
     pipe_info_init();
+
+    // 检查有无重定向标志
     for (int i = 0; i < 9; i++)
     {
         if (strcmp(args[i], "<") == 0 && pipe_info.is_in_redir == 0)
@@ -46,6 +50,7 @@ int parse_pipe()
         }
     }
 
+    // 检查有无管道标志
     for (int i = 0; i < 9; i++)
     {
         if (strcmp(args[i], "|") == 0 && pipe_info.is_pipe == 0)
@@ -60,6 +65,7 @@ int parse_pipe()
                 memset(args[pos + j], 0, sizeof(args[pos + j]));
             }
 
+            // 做管道重定向 输出至临时文件
             pipe_redir();
 
             if (dispatcher() == -1)
@@ -69,10 +75,11 @@ int parse_pipe()
                 printf("\n");
                 return -1;
             }
-
+            // 将缓冲区内容刷新出去，同时恢复文件描述符，依据有无重定向输出标志继续重定向
             pipe_reset(pos);
             if (dispatcher() == -1)
             {
+                // 命令执行失败也要全部恢复
                 pipe_info_reset();
                 pipe_fd_reset();
                 printf("\n");
@@ -89,6 +96,7 @@ int parse_pipe()
     return 0;
 }
 
+// 管道信息初始化
 void pipe_info_init()
 {
     pipe_info.is_pipe = 0;
@@ -105,6 +113,7 @@ void pipe_info_init()
     sprintf(pipe_info.temp_out_file_name, "%s", "/tmp/used_for_out_pipe");
 }
 
+// 管道信息重置
 void pipe_info_reset()
 {
     pipe_info.is_pipe = 0;
@@ -115,6 +124,7 @@ void pipe_info_reset()
     remove(pipe_info.temp_file_name);
 }
 
+// 管道利用的描述符重置
 void pipe_fd_reset()
 {
     fflush(stdout); // 需要刷新缓冲区，把缓冲区内的内容输出出去
@@ -124,6 +134,7 @@ void pipe_fd_reset()
     fflush(stdout);
 }
 
+// 管道重定向
 void pipe_redir()
 {
     int fd;
@@ -138,8 +149,10 @@ void pipe_redir()
     dup2(fd, 1);
 }
 
+// 恢复
 void pipe_reset(int pos)
 {
+    // 做恢复
     pipe_fd_reset();
 
     for (int j = 0; j < 10; j++)
@@ -176,6 +189,8 @@ void pipe_reset(int pos)
     args[pos][index - 1] = 0;
     fclose(src_r);
     pipe_fd_reset();
+
+    // 如果有重定向输出标志，继续重定向
     if (pipe_info.is_out_redir == 1)
     {
         int fd;
