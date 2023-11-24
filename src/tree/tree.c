@@ -26,7 +26,7 @@ void syscall_tree(char *args0, char *args1)
     int isLast[1024] = {0}; // 用于记录父节点是不是最后一个文件
     tree(path, 0, is_a, isLast);
 
-    printf("\x1b[33m%d directories, %d files\x1b[0m", tree_folder, tree_file);
+    printf("\x1b[33m%d directories, %d files\x1b[0m\n", tree_folder, tree_file);
     tree_folder = 0;
     tree_file = 0;
 }
