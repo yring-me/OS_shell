@@ -29,7 +29,7 @@ int background()
         printf("%schild pid:%d working...%s\n", COLOR_YELLOW, getpid(), COLOR_RESET);
 
         // sleep(1000);可以加此语句来验证没有阻塞
-        system((const char *)args);
+        system((const char *)args); // 这里也可以转为调用此程序的内部shell，做一次dispatch，简单处理一下返回逻辑就ok了，不过实在不想写了：）
         printf("%schild pid:%d done%s\n", COLOR_GREEN, getpid(), COLOR_RESET);
         exit(1);
     }
