@@ -12,8 +12,8 @@ extern struct mk_info // ls 信息
     mode_t mode;    // 权限
 } mk_info;
 
-void mkdir_recursive(const char *path, mode_t mode);
-void mkdir_info_check(char *args0, char *args1, char *args2, char *args3, char *args4);
+int mkdir_recursive(const char *path, mode_t mode);
+int mkdir_info_check(char *args0, char *args1, char *args2, char *args3, char *args4);
 void mk_info_reset();
 void mk_info_init();
 

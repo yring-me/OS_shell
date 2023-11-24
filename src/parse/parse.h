@@ -9,7 +9,7 @@
 
 extern char args[10][4096];
 
-void dispatcher();
+int dispatcher();
 
 void parse_buffer(char *);
 void set_promat();

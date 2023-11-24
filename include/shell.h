@@ -34,7 +34,8 @@
 #include "../src/rm/rm.h"
 #include "../src/tree/tree.h"
 #include "../src/ps/ps.h"
-#include "../src/diret/diret.h"
+#include "../src/redirect/redirect.h"
+#include "../src/functions/function.h"
 
 #define SYS_HELP 0
 #define SYS_MAN 1
@@ -46,11 +47,14 @@
 #define SYS_MV 7
 #define SYS_MKDIR 8
 #define SYS_TREE 9
-#define SYS_PIPE 11
+
 #define SYS_CAT 12
 #define SYS_CLEAR 13
 #define SYS_PS 14
 #define SYS_HISTORY 99
+
+#define FUNC_TOUPPER 50
+#define FUNC_TOLOWER 51
 
 #define MAX_INPUT_SIZE 1024
 
@@ -74,20 +78,22 @@ typedef int (*syscall_handler_t)(char *, char *, char *, char *);
 void syscall_history();
 void syscall_help(char *args);
 void syscall_man();
-void syscall_ls(char *args0, const char *agrs1, const char *args2);
-void syscall_cd(char *path);
-void syscall_pwd();
+int syscall_ls(char *args0, const char *agrs1, const char *args2);
+int syscall_cd(char *path);
+int syscall_pwd();
 // int syscall_cp(char *src, char *dest);
 int syscall_cp(char *args0, char *args1, char *args2);
-void syscall_rm(char *src, char *arg1);
-void syscall_mv(char *src, char *dest);
-void syscall_mkdir(char *args0, char *args1, char *args2, char *args3, char *args4);
-void syscall_tree(char *args0, char *args1);
-void syscall_pipe(char *cmd1, char *cmd2);
+int syscall_rm(char *src, char *arg1);
+int syscall_mv(char *src, char *dest);
+int syscall_mkdir(char *args0, char *args1, char *args2, char *args3, char *args4);
+int syscall_tree(char *args0, char *args1);
 int syscall_cat(char *args0, char *args1, char *args2);
-void syscall_clear();
-void syscall_ps();
+int syscall_clear();
+int syscall_ps();
 
+// 一些功能性函数声明
+int my_toupper(char *buffer);
+int my_tolower(char *buffer);
 // shell函数注册
 static const syscall_handler_t sys_table[] = {
     [SYS_HISTORY] = (syscall_handler_t)syscall_history,
@@ -101,11 +107,12 @@ static const syscall_handler_t sys_table[] = {
     [SYS_MV] = (syscall_handler_t)syscall_mv,
     [SYS_MKDIR] = (syscall_handler_t)syscall_mkdir,
     [SYS_TREE] = (syscall_handler_t)syscall_tree,
-    [SYS_PIPE] = (syscall_handler_t)syscall_pipe,
     [SYS_CAT] = (syscall_handler_t)syscall_cat,
     [SYS_CLEAR] = (syscall_handler_t)syscall_clear,
     [SYS_PS] = (syscall_handler_t)syscall_ps,
 
+    [FUNC_TOUPPER] = (syscall_handler_t)my_toupper,
+    [FUNC_TOLOWER] = (syscall_handler_t)my_tolower,
 };
 
 // 基本shell结构
@@ -162,10 +169,6 @@ static const shell cmd_list[] = {
         .id = SYS_TREE,
     },
     {
-        .name = "|",
-        .id = SYS_PIPE,
-    },
-    {
         .name = "cat",
         .id = SYS_CAT,
     },
@@ -177,6 +180,13 @@ static const shell cmd_list[] = {
         .name = "ps",
         .id = SYS_PS,
     },
-};
+    {
+        .name = "toupper",
+        .id = FUNC_TOUPPER,
+    },
+    {
+        .name = "tolower",
+        .id = FUNC_TOLOWER,
+    }};
 
 #endif

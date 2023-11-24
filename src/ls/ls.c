@@ -2,15 +2,20 @@
 
 struct ls_info ls_info = {0};
 
-void syscall_ls(char *args0, const char *agrs1, const char *args2)
+int syscall_ls(char *args0, const char *agrs1, const char *args2)
 {
     ls_info_init();                     // ls信息初始化
     ls_info_check(args0, agrs1, args2); // 处理参数信息，并把相关信息赋值给ls_info结构体
     if (ls_info.is_l == 1)
-        ls_l(); // 带 -l 参数
-    else
-        ls();        // 不带 -l 参数
+    {
+        if (ls_l() == -1) // 带 -l 参数
+            return -1;
+    }
+    if (ls() == -1) // 不带 -l 参数
+        return -1;
+
     ls_info_reset(); // 重置ls_info结构体
+    return 1;
 }
 
 // 处理 ls 的参数信息
@@ -76,7 +81,7 @@ void ls_info_init()
 }
 
 // ls -l
-void ls_l()
+int ls_l()
 {
     DIR *dir;
     struct dirent *entry;
@@ -85,7 +90,7 @@ void ls_l()
     if ((dir = opendir(ls_info.path)) == NULL)
     {
         fprintf(stderr, "Error: Cannot open directory '%s'. %s\n", ls_info.path, strerror(errno));
-        return;
+        return -1;
     }
 
     // readdir 函数：用于读取目录中的条目。它返回一个指向 dirent 结构体的指针，该结构体包含有关目录中下一个文件或子目录的信息。
@@ -102,7 +107,7 @@ void ls_l()
         if (stat(file_path, &file_stat) == -1)
         {
             perror("stat");
-            exit(EXIT_FAILURE);
+            return -1;
         }
 
         // 获取所有者和组信息：使用 getpwuid 和 getgrgid 函数获取文件所有者和组的详细信息
@@ -121,7 +126,7 @@ void ls_l()
         }
 
         // 输出文件信息：根据获取到的文件信息，使用 printf 函数输出文件的详细信息
-        printf("%c%3s%3s%3s %5lu %s %s %10ld %s ",
+        printf("%c%3s%3s%3s %5hu %s %s %10lld %s ",
                file_type,
                perm[(file_stat.st_mode & mask) >> 2 * 3],
                perm[(file_stat.st_mode & (mask >> 3)) >> 1 * 3],
@@ -152,10 +157,11 @@ void ls_l()
         }
     }
     closedir(dir);
+    return 1;
 }
 
 // ls
-void ls()
+int ls()
 {
     DIR *dir;
     struct dirent *entry;
@@ -164,7 +170,7 @@ void ls()
     {
         fprintf(stderr, "\x1b[31mError: Cannot open directory '%s'. %s\x1b[0m\n", ls_info.path, strerror(errno));
         ls_info_reset();
-        return;
+        return -1;
     }
 
     while ((entry = readdir(dir)) != NULL)
@@ -197,4 +203,5 @@ void ls()
     printf("\n");
 
     closedir(dir);
+    return 1;
 }

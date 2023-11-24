@@ -26,7 +26,7 @@ void parse_buffer(char *buffer_in)
 }
 
 // 用于命令分发
-void dispatcher()
+int dispatcher()
 {
     int id = -1;
 
@@ -45,14 +45,16 @@ void dispatcher()
     if (id == -1)
     {
         printf("\x1b[31mcommand not found: %s\x1b[0m\n", args[0]);
-        return;
+        return -1;
     }
 
     // 根据调用号，找到函数调用
     syscall_handler_t handler = sys_table[id];
-    handler(args[1], args[2], args[3], args[4]);
+    if (handler(args[1], args[2], args[3], args[4]) == -1)
+        return -1;
     memset(args, 0, sizeof(args));
     clean_buffer();
+    return 1;
 }
 
 // 检查命令是否存在

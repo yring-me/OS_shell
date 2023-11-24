@@ -21,14 +21,17 @@ int main()
             continue;
         }
 
-        parse_buffer(buffer); // 对输入分析
+        parse_buffer(buffer); // 对输入分词
+
+        int pipe_ret = parse_pipe();
+        if (pipe_ret == -1 || pipe_ret == 1)
+            continue;
 
         if (check_cmd() == -1) // 检查命令是否合法
             continue;
 
         if (parse_redir() == -1)
             continue; // 检查是否有重定向标志
-
         dispatcher(); // 命令分发
 
         printf("\n");

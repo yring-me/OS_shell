@@ -13,6 +13,6 @@ extern struct ls_info // ls 信息
 void ls_info_check(char *args0, const char *agrs1, const char *args2);
 void ls_info_reset();
 void ls_info_init();
-void ls_l();
-void ls();
+int ls_l();
+int ls();
 #endif

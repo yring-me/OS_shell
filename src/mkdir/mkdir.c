@@ -1,10 +1,14 @@
 #include "mkdir.h"
 struct mk_info mk_info;
-void syscall_mkdir(char *args0, char *args1, char *args2, char *args3, char *args4)
+int syscall_mkdir(char *args0, char *args1, char *args2, char *args3, char *args4)
 {
     // mkdir(name, 0777);
     mk_info_init();
-    mkdir_info_check(args0, args1, args2, args3, args4);
+    if (mkdir_info_check(args0, args1, args2, args3, args4) == -1)
+    {
+        mk_info_reset();
+        return -1;
+    }
     if (mk_info.is_p == 1)
     {
         mkdir_recursive(mk_info.path, mk_info.mode);
@@ -14,35 +18,51 @@ void syscall_mkdir(char *args0, char *args1, char *args2, char *args3, char *arg
         if (strlen(args0) != 0 && strcmp(args0, "-m") != 0)
         {
             if (mkdir(args0, mk_info.mode) == -1)
+            {
                 fprintf(stderr, "Failed to create directory: %s\n", args0);
+                return -1;
+            }
         }
         if (strlen(args1) != 0 && strcmp(args0, "-m") != 0)
         {
             if (mkdir(args1, mk_info.mode) == -1)
+            {
                 fprintf(stderr, "Failed to create directory: %s\n", args1);
+                return -1;
+            }
         }
         if (strlen(args2) != 0 && strcmp(args2, "-m") != 0)
         {
             if (mkdir(args2, mk_info.mode) == -1)
+            {
+                return -1;
                 fprintf(stderr, "Failed to create directory: %s\n", args2);
+            }
         }
         if (strlen(args3) != 0 && strcmp(args2, "-m") != 0)
         {
             if (mkdir(args3, mk_info.mode) == -1)
+            {
                 fprintf(stderr, "Failed to create directory: %s\n", args3);
+                return -1;
+            }
         }
         if (strlen(args4) != 0)
         {
             if (mkdir(args4, mk_info.mode) == -1)
+            {
+                return -1;
                 fprintf(stderr, "Failed to create directory: %s\n", args4);
+            }
         }
     }
 
     mk_info_reset();
+    return 1;
 }
 
 // 递归创建目录
-void mkdir_recursive(const char *path, mode_t mode)
+int mkdir_recursive(const char *path, mode_t mode)
 {
     char *p = NULL;
     char *temp_path = strdup(path); // 使用strdup复制路径，以免修改原始路径字符串
@@ -57,7 +77,7 @@ void mkdir_recursive(const char *path, mode_t mode)
             if (errno != EEXIST)
             {
                 perror("mkdir");
-                exit(EXIT_FAILURE);
+                return -1;
             }
         }
         *p = '/'; // 恢复路径字符串
@@ -70,14 +90,15 @@ void mkdir_recursive(const char *path, mode_t mode)
         if (errno != EEXIST)
         {
             perror("mkdir");
-            exit(EXIT_FAILURE);
+            return -1;
         }
     }
 
     free(temp_path); // 释放分配的内存
+    return 1;
 }
 
-void mkdir_info_check(char *args0, char *args1, char *args2, char *args3, char *args4)
+int mkdir_info_check(char *args0, char *args1, char *args2, char *args3, char *args4)
 {
     if (args0[0] == '-' && strcmp(args0, "-p") != 0 && strcmp(args0, "-m") != 0)
         printf("\x1b[33mWarning Invalid Arguments %s\x1b[0m\n", args0);
@@ -96,7 +117,7 @@ void mkdir_info_check(char *args0, char *args1, char *args2, char *args3, char *
         else
         {
             printf("\x1b[31muse -p <dir> to make dir.\x1b[0m\n");
-            return;
+            return -1;
         }
     }
 
@@ -111,7 +132,7 @@ void mkdir_info_check(char *args0, char *args1, char *args2, char *args3, char *
         else
         {
             printf("\x1b[31muse -p <dir> to make dir.\x1b[0m\n");
-            return;
+            return -1;
         }
     }
 
@@ -126,7 +147,7 @@ void mkdir_info_check(char *args0, char *args1, char *args2, char *args3, char *
         else
         {
             printf("\x1b[31muse -p <dir> to make dir.\x1b[0m\n");
-            return;
+            return -1;
         }
     }
 
@@ -141,9 +162,10 @@ void mkdir_info_check(char *args0, char *args1, char *args2, char *args3, char *
         else
         {
             printf("\x1b[31muse -p <dir> to make dir.\x1b[0m\n");
-            return;
+            return -1;
         }
     }
+    return 1;
 }
 
 // 重置 mk_info 信息

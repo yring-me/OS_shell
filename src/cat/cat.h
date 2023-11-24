@@ -11,7 +11,7 @@ extern struct cat_info
     char file[256];
 } cat_info;
 
-void cat();
+int cat();
 void cat_info_check(char *args0, const char *args1, const char *args2);
 void cat_info_init();
 void cat_info_reset();

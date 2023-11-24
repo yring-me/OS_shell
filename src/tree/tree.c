@@ -1,7 +1,7 @@
 #include "tree.h"
 int tree_file = 0;
 int tree_folder = 0;
-void syscall_tree(char *args0, char *args1)
+int syscall_tree(char *args0, char *args1)
 {
     // 处理 -a 参数，以及默认是当前路径
     char path[256] = {0};
@@ -24,14 +24,16 @@ void syscall_tree(char *args0, char *args1)
         sprintf(path, "%s", args0);
     printf("%s\n", path);
     int isLast[1024] = {0}; // 用于记录父节点是不是最后一个文件
-    tree(path, 0, is_a, isLast);
+    if (tree(path, 0, is_a, isLast) == -1)
+        return -1;
 
     printf("\x1b[33m%d directories, %d files\x1b[0m\n", tree_folder, tree_file);
     tree_folder = 0;
     tree_file = 0;
+    return 1;
 }
 
-void tree(char *direntName, int level, int is_a, int isLast[])
+int tree(char *direntName, int level, int is_a, int isLast[])
 {
     // 定义一个目录流指针
     DIR *p_dir = NULL;
@@ -48,7 +50,7 @@ void tree(char *direntName, int level, int is_a, int isLast[])
     if (p_dir == NULL)
     {
         printf("\x1b[31mopendir error\n\x1b[0m");
-        return;
+        return -1;
     }
 
     while ((entry = readdir(p_dir)) != NULL)
@@ -95,11 +97,5 @@ void tree(char *direntName, int level, int is_a, int isLast[])
 
         free(entries[i]);
     }
-}
-
-int insensitiveCompare(const void *a, const void *b)
-{
-    const char *str1 = *(const char **)a;
-    const char *str2 = *(const char **)b;
-    return strcasecmp(str1, str2);
+    return 1;
 }

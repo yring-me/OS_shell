@@ -6,6 +6,6 @@
 #include <ctype.h>
 
 int isNum(const char *str);
-void printProcessInfo(const char *pid);
+int printProcessInfo(const char *pid);
 
 #endif

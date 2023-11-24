@@ -6,8 +6,7 @@
 #include "../../include/shell.h"
 
 #include <string.h>
-void tree(char *direntName, int level, int is_a, int isLast[]);
-int insensitiveCompare(const void *a, const void *b);
+int tree(char *direntName, int level, int is_a, int isLast[]);
 
 extern int tree_file;
 extern int tree_folder;

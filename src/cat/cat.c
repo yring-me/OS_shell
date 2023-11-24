@@ -6,20 +6,24 @@ int syscall_cat(char *args0, char *args1, char *args2)
 {
     cat_info_init();
     cat_info_check(args0, args1, args2);
-    cat();
+    if (cat() == -1)
+    {
+        cat_info_reset();
+        return -1;
+    }
     cat_info_reset();
     return 0;
 }
 
 // cat 命令主体
-void cat()
+int cat()
 {
     FILE *fp;
     if ((fp = fopen(cat_info.file, "r")) == NULL)
     { // 判断是不是空文件
         // 打印错误信息
         perror(cat_info.file);
-        return;
+        return -1;
     }
     char buff[1024] = {0};
     while (fgets(buff, sizeof(buff), fp))
@@ -50,7 +54,7 @@ void cat()
         }
     }
     fclose(fp); // 关闭文件
-    return;
+    return 1;
 }
 
 // 处理 cat 的参数信息

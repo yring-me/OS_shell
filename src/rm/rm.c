@@ -1,5 +1,5 @@
 #include "rm.h"
-void syscall_rm(char *src, char *arg1)
+int syscall_rm(char *src, char *arg1)
 {
     struct stat file_stat;
     if (strcmp("-r", src) == 0) // 带 -r 参数的处理，即使得src始终指向文件
@@ -11,7 +11,7 @@ void syscall_rm(char *src, char *arg1)
     if (strlen(src) == 0)
     {
         printf("\x1b[31mNeed a fild name\x1b[0m\n");
-        return;
+        return -1;
     }
     if (stat(src, &file_stat) == -1)
     {
@@ -24,14 +24,14 @@ void syscall_rm(char *src, char *arg1)
     {
         printf("\x1b[31mcp: %s is a directory (not copied).\x1b[0m\n", src);
         printf("\x1b[31muse -r to delete it.\x1b[0m\n");
-        return;
+        return -1;
     }
 
     // 删文件夹
     if ((S_ISDIR(file_stat.st_mode) == 1 && strcmp("-r", arg1) == 0))
     {
         remove_dir(src);
-        return;
+        return 1;
     }
 
     if ((S_ISREG(file_stat.st_mode) == 1))
@@ -39,8 +39,9 @@ void syscall_rm(char *src, char *arg1)
         printf("\x1b[31m");
         remove(src);
         printf("\x1b[0m");
-        return;
+        return 1;
     }
+    return 1;
 }
 
 // 删除文件夹
