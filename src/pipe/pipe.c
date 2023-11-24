@@ -63,11 +63,21 @@ int parse_pipe()
             pipe_redir();
 
             if (dispatcher() == -1)
+            {
+                pipe_info_reset();
+                pipe_fd_reset();
+                printf("\n");
                 return -1;
+            }
 
             pipe_reset(pos);
             if (dispatcher() == -1)
+            {
+                pipe_info_reset();
+                pipe_fd_reset();
+                printf("\n");
                 return -1;
+            }
 
             pipe_info_reset();
             pipe_fd_reset();
