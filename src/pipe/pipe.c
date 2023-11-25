@@ -6,6 +6,19 @@ int parse_pipe()
 {
     if (check_cmd() == -1) // 检查命令是否合法
         return -1;
+
+    int flag = 0;
+    for (int i = 0; i < 9; i++)
+    {
+        if (strcmp(args[i], "|") == 0 && pipe_info.is_pipe == 0)
+        {
+            flag = 1;
+            break;
+        }
+    }
+
+    if (flag == 0)
+        return 0;
     pipe_info_init();
 
     // 检查有无重定向标志
