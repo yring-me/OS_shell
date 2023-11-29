@@ -21,6 +21,7 @@
 #include "../src/cd/cd.h"
 #include "../src/clear/clear.h"
 #include "../src/cp/cp.h"
+#include "../src/head/head.h"
 #include "../src/help_man/help_man.h"
 #include "../src/history/history.h"
 #include "../src/promat/promat.h"
@@ -32,6 +33,7 @@
 #include "../src/promat/promat.h"
 #include "../src/pwd/pwd.h"
 #include "../src/rm/rm.h"
+#include "../src/tail/tail.h"
 #include "../src/tree/tree.h"
 #include "../src/ps/ps.h"
 #include "../src/redirect/redirect.h"
@@ -52,6 +54,8 @@
 #define SYS_CAT 12
 #define SYS_CLEAR 13
 #define SYS_PS 14
+#define SYS_HEAD 15
+#define SYS_TAIL 16
 #define SYS_HISTORY 99
 
 #define FUNC_TOUPPER 50
@@ -91,6 +95,8 @@ int syscall_tree(char *args0, char *args1);
 int syscall_cat(char *args0, char *args1, char *args2);
 int syscall_clear();
 int syscall_ps();
+void syscall_head(char *args0, char *args1);
+void syscall_tail(char *args0, char *args1);
 
 // 一些功能性函数声明
 int my_toupper(char *buffer);
@@ -111,6 +117,8 @@ static const syscall_handler_t sys_table[] = {
     [SYS_CAT] = (syscall_handler_t)syscall_cat,
     [SYS_CLEAR] = (syscall_handler_t)syscall_clear,
     [SYS_PS] = (syscall_handler_t)syscall_ps,
+    [SYS_HEAD] = (syscall_handler_t)syscall_head,
+    [SYS_TAIL] = (syscall_handler_t)syscall_tail,
 
     [FUNC_TOUPPER] = (syscall_handler_t)my_toupper,
     [FUNC_TOLOWER] = (syscall_handler_t)my_tolower,
@@ -180,6 +188,14 @@ static const shell cmd_list[] = {
     {
         .name = "ps",
         .id = SYS_PS,
+    },
+    {
+        .name = "head",
+        .id = SYS_HEAD,
+    },
+    {
+        .name = "tail",
+        .id = SYS_TAIL,
     },
     {
         .name = "toupper",
