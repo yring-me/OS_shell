@@ -39,6 +39,8 @@
 #include "../src/redirect/redirect.h"
 #include "../src/functions/function.h"
 #include "../src/background/background.h"
+#include "../src/touch/touch.h"
+#include "../src/vim/vim.h"
 
 #define SYS_HELP 0
 #define SYS_MAN 1
@@ -56,6 +58,8 @@
 #define SYS_PS 14
 #define SYS_HEAD 15
 #define SYS_TAIL 16
+#define SYS_TOUCH 17
+#define SYS_VIM 18
 #define SYS_HISTORY 99
 
 #define FUNC_TOUPPER 50
@@ -97,6 +101,8 @@ int syscall_clear();
 int syscall_ps();
 void syscall_head(char *args0, char *args1);
 void syscall_tail(char *args0, char *args1);
+void syscall_touch(char *args0);
+void syscall_vim(char *args0);
 
 // 一些功能性函数声明
 int my_toupper(char *buffer);
@@ -119,6 +125,8 @@ static const syscall_handler_t sys_table[] = {
     [SYS_PS] = (syscall_handler_t)syscall_ps,
     [SYS_HEAD] = (syscall_handler_t)syscall_head,
     [SYS_TAIL] = (syscall_handler_t)syscall_tail,
+    [SYS_TOUCH] = (syscall_handler_t)syscall_touch,
+    [SYS_VIM] = (syscall_handler_t)syscall_vim,
 
     [FUNC_TOUPPER] = (syscall_handler_t)my_toupper,
     [FUNC_TOLOWER] = (syscall_handler_t)my_tolower,
@@ -196,6 +204,14 @@ static const shell cmd_list[] = {
     {
         .name = "tail",
         .id = SYS_TAIL,
+    },
+    {
+        .name = "touch",
+        .id = SYS_TOUCH,
+    },
+    {
+        .name = "vim",
+        .id = SYS_VIM,
     },
     {
         .name = "toupper",
