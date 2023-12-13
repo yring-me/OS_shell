@@ -22,7 +22,7 @@ int syscall_rm(char *src, char *arg1)
     // 删文件夹 但缺少 -r 参数
     if (S_ISDIR(file_stat.st_mode) == 1 && strcmp("-r", arg1) != 0)
     {
-        printf("\x1b[31mcp: %s is a directory (not copied).\x1b[0m\n", src);
+        printf("\x1b[31mrm: %s is a directory (not copied).\x1b[0m\n", src);
         printf("\x1b[31muse -r to delete it.\x1b[0m\n");
         return -1;
     }
