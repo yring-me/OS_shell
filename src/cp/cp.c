@@ -26,7 +26,7 @@ int syscall_cp(char *args0, char *args1, char *args2)
 
         if (strlen(args1) == 0 || strlen(args2) == 0)
         {
-            printf("\x1b[33mUse cp -r <dir1> <dir2> to copy directory");
+            printf("\x1b[33mUse cp -r <dir1> <dir2> to copy directory\n");
             return -1;
         }
         struct stat info1;
