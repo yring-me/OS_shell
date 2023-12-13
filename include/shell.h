@@ -81,7 +81,7 @@
 #define COLOR_BRIGHT_CYAN "\x1b[96m"
 #define COLOR_RESET "\x1b[0m"
 // 函数指针，用于抽象，统一调用
-typedef int (*syscall_handler_t)(char *, char *, char *, char *);
+typedef int (*syscall_handler_t)(char *, char *, char *, char *, char *);
 
 // shell命令函数声明
 void syscall_history();
