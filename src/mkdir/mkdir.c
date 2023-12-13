@@ -13,13 +13,16 @@ int syscall_mkdir(char *args0, char *args1, char *args2, char *args3, char *args
     {
         mkdir_recursive(mk_info.path, mk_info.mode);
     }
+
     else
     {
         if (strlen(args0) != 0 && strcmp(args0, "-m") != 0)
         {
             if (mkdir(args0, mk_info.mode) == -1)
             {
+
                 fprintf(stderr, "Failed to create directory: %s\n", args0);
+                mk_info_reset();
                 return -1;
             }
         }
@@ -28,6 +31,7 @@ int syscall_mkdir(char *args0, char *args1, char *args2, char *args3, char *args
             if (mkdir(args1, mk_info.mode) == -1)
             {
                 fprintf(stderr, "Failed to create directory: %s\n", args1);
+                mk_info_reset();
                 return -1;
             }
         }
@@ -35,8 +39,10 @@ int syscall_mkdir(char *args0, char *args1, char *args2, char *args3, char *args
         {
             if (mkdir(args2, mk_info.mode) == -1)
             {
-                return -1;
+
                 fprintf(stderr, "Failed to create directory: %s\n", args2);
+                mk_info_reset();
+                return -1;
             }
         }
         if (strlen(args3) != 0 && strcmp(args2, "-m") != 0)
@@ -44,6 +50,7 @@ int syscall_mkdir(char *args0, char *args1, char *args2, char *args3, char *args
             if (mkdir(args3, mk_info.mode) == -1)
             {
                 fprintf(stderr, "Failed to create directory: %s\n", args3);
+                mk_info_reset();
                 return -1;
             }
         }
@@ -51,8 +58,10 @@ int syscall_mkdir(char *args0, char *args1, char *args2, char *args3, char *args
         {
             if (mkdir(args4, mk_info.mode) == -1)
             {
-                return -1;
+
                 fprintf(stderr, "Failed to create directory: %s\n", args4);
+                mk_info_reset();
+                return -1;
             }
         }
     }
