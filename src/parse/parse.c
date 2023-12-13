@@ -50,8 +50,11 @@ int dispatcher()
 
     // 根据调用号，找到函数调用
     syscall_handler_t handler = sys_table[id];
-    if (handler(args[1], args[2], args[3], args[4]) == -1)
+    if (handler(args[1], args[2], args[3], args[4], args[5]) == -1)
+    {
+        memset(args, 0, sizeof(args));
         return -1;
+    }
     memset(args, 0, sizeof(args));
     clean_buffer();
     return 1;
