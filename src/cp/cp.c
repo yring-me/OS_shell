@@ -6,6 +6,24 @@ int syscall_cp(char *args0, char *args1, char *args2)
     // -r 复制目录
     if (strcmp(args0, "-r") == 0)
     {
+        struct stat temp;
+        // 复制文件到目录,目录不存在
+        if (stat(args2, &temp) != 0 && strrchr(args2, '/') != NULL)
+        {
+
+            char *path_dir = strrchr(args2, '/');
+            if (path_dir)
+                *path_dir = 0;
+
+            struct stat temp;
+            if (stat(args2, &temp) != 0)
+            {
+                printf("%s%s No such directory%s\n", COLOR_RED, args2, COLOR_RESET);
+                return -1;
+            }
+            *path_dir = '/';
+        }
+
         if (strlen(args1) == 0 || strlen(args2) == 0)
         {
             printf("\x1b[33mUse cp -r <dir1> <dir2> to copy directory");
@@ -34,6 +52,24 @@ int syscall_cp(char *args0, char *args1, char *args2)
     }
     else // 不是-r选项，复制文件
     {
+        struct stat temp;
+        // 复制文件到目录,目录不存在
+        if (stat(args1, &temp) != 0 && strrchr(args1, '/') != NULL)
+        {
+
+            char *path_dir = strrchr(args1, '/');
+            if (path_dir)
+                *path_dir = 0;
+
+            struct stat temp;
+            if (stat(args1, &temp) != 0)
+            {
+                printf("%s%s No such directory%s\n", COLOR_RED, args1, COLOR_RESET);
+                return -1;
+            }
+            *path_dir = '/';
+        }
+
         if (strlen(args0) == 0 || strlen(args1) == 0)
         {
             printf("Use cp <file> <dir> to copy file; cp -r <dir1> <dir2> to copy directory\n");
@@ -55,21 +91,6 @@ int syscall_cp(char *args0, char *args1, char *args2)
             return -1;
         }
 
-        // 复制文件到目录,目录不存在
-        if (stat(args1, &info1) != 0 && strrchr(args1, '/') != NULL)
-        {
-
-            char *path_dir = strrchr(args1, '/');
-            if (path_dir)
-                *path_dir = 0;
-
-            struct stat temp;
-            if (stat(args1, &temp) != 0)
-            {
-                printf("%s%s No such directory%s\n", COLOR_RED, args1, COLOR_RESET);
-                return -1;
-            }
-        }
         if (stat(args1, &info1) == 0) // args1存在
         {
             if (S_ISDIR(info1.st_mode)) // args1是目录
