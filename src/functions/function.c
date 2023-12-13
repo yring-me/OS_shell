@@ -1,6 +1,6 @@
 #include "function.h"
 
-int my_toupper(char *buffer)
+int to_uppercase(char *buffer)
 {
     int index = 0;
     while (buffer[index] != 0)
@@ -14,7 +14,7 @@ int my_toupper(char *buffer)
     return 1;
 }
 
-int my_tolower(char *buffer)
+int to_lowercase(char *buffer)
 {
     int index = 0;
     while (buffer[index] != 0)

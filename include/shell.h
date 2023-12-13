@@ -105,8 +105,8 @@ void syscall_touch(char *args0);
 void syscall_vim(char *args0);
 
 // 一些功能性函数声明
-int my_toupper(char *buffer);
-int my_tolower(char *buffer);
+int to_uppercase(char *buffer);
+int to_lowercase(char *buffer);
 // shell函数注册
 static const syscall_handler_t sys_table[] = {
     [SYS_HISTORY] = (syscall_handler_t)syscall_history,
@@ -128,8 +128,8 @@ static const syscall_handler_t sys_table[] = {
     [SYS_TOUCH] = (syscall_handler_t)syscall_touch,
     [SYS_VIM] = (syscall_handler_t)syscall_vim,
 
-    [FUNC_TOUPPER] = (syscall_handler_t)my_toupper,
-    [FUNC_TOLOWER] = (syscall_handler_t)my_tolower,
+    [FUNC_TOUPPER] = (syscall_handler_t)to_uppercase,
+    [FUNC_TOLOWER] = (syscall_handler_t)to_lowercase,
 };
 
 // 基本shell结构
@@ -214,11 +214,11 @@ static const shell cmd_list[] = {
         .id = SYS_VIM,
     },
     {
-        .name = "toupper",
+        .name = "to_uppercase",
         .id = FUNC_TOUPPER,
     },
     {
-        .name = "tolower",
+        .name = "to_lowercase",
         .id = FUNC_TOLOWER,
     }};
 
