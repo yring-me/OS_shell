@@ -45,6 +45,8 @@ int dispatcher()
     if (id == -1)
     {
         printf("\x1b[31mcommand not found: %s\x1b[0m\n", args[0]);
+        memset(args, 0, sizeof(args));
+        clean_buffer();
         return -1;
     }
 
@@ -53,6 +55,7 @@ int dispatcher()
     if (handler(args[1], args[2], args[3], args[4], args[5]) == -1)
     {
         memset(args, 0, sizeof(args));
+        clean_buffer();
         return -1;
     }
     memset(args, 0, sizeof(args));
