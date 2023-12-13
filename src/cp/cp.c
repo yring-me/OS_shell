@@ -12,6 +12,7 @@ int syscall_cp(char *args0, char *args1, char *args2)
             return -1;
         }
         struct stat info1;
+
         if (stat(args1, &info1) == 0)
         {
             if (S_ISDIR(info1.st_mode)) // args1是目录
@@ -21,7 +22,7 @@ int syscall_cp(char *args0, char *args1, char *args2)
             }
             else
             {
-                printf("Use cp <file> <dir> to copy file; cp -r <dir1> <dir2> to copy directory");
+                printf("Use cp <file> <dir> to copy file; cp -r <dir1> <dir2> to copy directory\n");
                 return -1;
             }
         }
@@ -35,46 +36,61 @@ int syscall_cp(char *args0, char *args1, char *args2)
     {
         if (strlen(args0) == 0 || strlen(args1) == 0)
         {
-            printf("Use cp <file> <dir> to copy file; cp -r <dir1> <dir2> to copy directory");
+            printf("Use cp <file> <dir> to copy file; cp -r <dir1> <dir2> to copy directory\n");
             return -1;
         }
         struct stat info0;
         struct stat info1;
 
-        if (stat(args0, &info0) == 0) // args0存在
+        // 判断源文件信息
+        if (stat(args0, &info0) != 0)
         {
-            if (S_ISREG(info0.st_mode)) // args0是文件
-            {
-                if (stat(args1, &info1) == 0) // args1存在
-                {
-                    if (S_ISDIR(info1.st_mode)) // args1是目录
-                    {
+            printf("%sFailed to open: %s%s\n", COLOR_RED, args0, COLOR_RESET);
+            return -1;
+        }
 
-                        if (copy_file_to_dir(args0, args1) == -1) // 复制文件到目录下
-                            return -1;
-                    }
-                    else
-                    {
-                        printf("Use cp <file> <dir> to copy file; cp -r <dir1> <dir2> to copy directory");
-                        return -1;
-                    }
-                }
-                else // args1不存在，当作文件来处理
-                {
-                    if (copy_file_to_file(args0, args1) == -1) // 复制文件到文件
-                        return -1;
-                }
-            }
-            else
+        if (S_ISDIR(info0.st_mode))
+        {
+            printf("Use cp <file> <dir> to copy file; cp -r <dir1> <dir2> to copy directory\n");
+            return -1;
+        }
+
+        // 复制文件到目录,目录不存在
+        if (stat(args1, &info1) != 0 && strrchr(args1, '/') != NULL)
+        {
+
+            char *path_dir = strrchr(args1, '/');
+            if (path_dir)
+                *path_dir = 0;
+
+            struct stat temp;
+            if (stat(args1, &temp) != 0)
             {
-                printf("Use cp <file> <dir> to copy file; cp -r <dir1> <dir2> to copy directory");
+                printf("%s%s No such directory%s\n", COLOR_RED, args1, COLOR_RESET);
                 return -1;
             }
         }
-        else
+        if (stat(args1, &info1) == 0) // args1存在
         {
-            printf("\x1b[31mError:file no exist\x1b[0m\n");
-            return -1;
+            if (S_ISDIR(info1.st_mode)) // args1是目录
+            {
+
+                if (copy_file_to_dir(args0, args1) == -1) // 复制文件到目录下
+                    return -1;
+            }
+            else
+            {
+                printf("%sWaring: file %s has exited, this cmd will cover the original file\n%s", COLOR_YELLOW, args1, COLOR_RESET);
+                if (copy_file_to_file(args0, args1) == -1) // 复制文件到文件
+                    return -1;
+                return 0;
+            }
+        }
+        else // args1不存在，当作文件来处理
+        {
+
+            if (copy_file_to_file(args0, args1) == -1) // 复制文件到文件
+                return -1;
         }
     }
     return 0;
@@ -109,6 +125,7 @@ int copy_file_to_file(char *src, char *dest)
         return -1;
     }
     fpd = fopen(dest, "w");
+
     if (fps == NULL)
     {
         fclose(fps);
