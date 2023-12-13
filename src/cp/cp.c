@@ -160,7 +160,7 @@ int copy_folder(char *src, char *dest)
     if (stat(dest, &info) != 0) // 目录不存在就创建目录
         mkdir(dest, 0777);
 
-    printf("copy to %s to %s\n", src, dest);
+    // printf("copy to %s to %s\n", src, dest);
 
     DIR *srcDp = opendir(src);
     if (srcDp == NULL)
