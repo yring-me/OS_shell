@@ -14,7 +14,6 @@ int syscall_ls(char *args0, const char *agrs1, const char *args2)
     }
     if (ls() == -1) // 不带 -l 参数
         return -1;
-    return 1;
 
     ls_info_reset(); // 重置ls_info结构体
     return 1;
