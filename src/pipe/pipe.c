@@ -154,15 +154,14 @@ void pipe_redir()
     // 打开相应文件
     if ((fd = open(pipe_info.temp_file_name, O_RDWR | O_CREAT | O_TRUNC, 0777)) == -1)
     {
-        // cout << "open failed !" << endl;
-        printf("\x1b[31m%d\x1b[0m\n", errno);
+        printf("\x1b[31mopen failed code:%d\x1b[0m\n", errno);
     }
 
     // 将输出重定向到文件
     dup2(fd, 1);
 }
 
-// 恢复
+// 恢复同时处理有无重定向信息
 void pipe_reset(int pos)
 {
     // 做恢复
@@ -210,7 +209,9 @@ void pipe_reset(int pos)
         if ((fd = open(pipe_info.temp_out_file_name, O_RDWR | O_CREAT | O_TRUNC, 0777)) == -1)
         {
             // cout << "open failed !" << endl;
-            printf("\x1b[31m%d\x1b[0m\n", errno);
+            printf("%sWarning invalid file: %s%s\n", COLOR_YELLOW, pipe_info.temp_out_file_name, COLOR_RESET);
+            memset(args[pipe_info.out_index], 0, sizeof(args[pipe_info.out_index]));
+            memset(args[pipe_info.out_index + 1], 0, sizeof(args[pipe_info.out_index + 1]));
             return;
         }
         memset(args[pipe_info.out_index], 0, sizeof(args[pipe_info.out_index]));
@@ -225,7 +226,9 @@ void pipe_reset(int pos)
         if ((fd = open(pipe_info.temp_out_file_name, O_RDWR | O_CREAT | O_APPEND, 0777)) == -1)
         {
             // cout << "open failed !" << endl;
-            printf("\x1b[31m%d[\x1b[0m", errno);
+            printf("%sWarning invalid file: %s%s\n", COLOR_YELLOW, pipe_info.temp_out_file_name, COLOR_RESET);
+            memset(args[pipe_info.out_index], 0, sizeof(args[pipe_info.out_index]));
+            memset(args[pipe_info.out_index + 1], 0, sizeof(args[pipe_info.out_index + 1]));
             return;
         }
 

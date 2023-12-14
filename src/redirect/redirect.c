@@ -20,7 +20,7 @@ int parse_redir()
             if ((fd = open(redir_info.out_backup_name, O_RDWR | O_CREAT | O_APPEND, 0777)) == -1)
             {
                 // cout << "open failed !" << endl;
-                printf("\x1b[31m%d[\x1b[0m", errno);
+                printf("\x1b[31mfailed to open the file:%s[\x1b[0m", redir_info.out_backup_name);
                 return -1;
             }
             redir_info.out_fd = fd;
@@ -43,7 +43,7 @@ int parse_redir()
             if ((fd = open(redir_info.out_backup_name, O_RDWR | O_CREAT | O_TRUNC, 0777)) == -1) // 打开并清空外部文件
             {
                 // cout << "open failed !" << endl;
-                printf("\x1b[31m%d[\x1b[0m", errno);
+                printf("\x1b[31mfailed to open the file:%s[\x1b[0m", redir_info.out_backup_name);
                 return -1;
             }
             memset(args[i], 0, sizeof(args[i]));
@@ -67,6 +67,7 @@ int parse_redir()
 
             fread(buffer, sizeof(buffer), 1, src);
             memset(args[i], 0, sizeof(args[i]));
+            memset(args[i + 1], 0, sizeof(args[i + 1]));
             memcpy(args[i], buffer, strlen(buffer)); // 直接替换参数即可
 
             // puts(buffer);
@@ -122,13 +123,22 @@ void clean_buffer()
 
     FILE *src_r = fopen(redir_info.out_backup_name, "r"); // 打开临时文件
 
-    FILE *src_w;
+    FILE *src_w = NULL;
     // 根据重定向方式打开文件
     if (redir_info.out_flag == (O_RDWR | O_CREAT | O_APPEND))
         src_w = fopen(redir_info.out_file_name, "a+");
     else
         src_w = fopen(redir_info.out_file_name, "w+");
 
+    if (src_w == NULL)
+    {
+        printf("\x1b[31mfailed to open the file:%s\x1b[0m\n", redir_info.out_file_name);
+
+        fclose(src_r);
+        // 重置信息
+        redir_info_reset();
+        return;
+    }
     while (1)
     {
         char ch = fgetc(src_r);
