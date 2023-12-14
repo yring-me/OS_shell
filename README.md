@@ -33,7 +33,7 @@
 >
 > man 命令
 >
-> toupper、tolower 将字符串全部转化为大写或小写，主要用于测试管道、重定向等命令
+> to_uppercase、to_lowercase 将字符串全部转化为大写或小写，主要用于测试管道、重定向等命令
 >
 > & 后台运行程序，直接使用system函数，因此同时也实现了外部命令调用
 >
@@ -117,7 +117,7 @@ void syscall_history();
 ```
 ![](imgs/1.png)
 
-但只做了苹果的图标，因此理论上只有苹果用户可以看见，Linux用户请前往`main.c`中约13行位置，即`while`循环里第一个`printf`处，将苹果图标进行替换。同时需要下载`hack nerd font`字体
+图标需要下载`hack nerd font`字体
 
 ## 调试进展： 
 > 已完成：history ls cd pwd mkdir tree clear cat ps
