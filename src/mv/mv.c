@@ -17,7 +17,7 @@ int syscall_mv(char *src, char *dest)
         return -1;
     }
     // 复制文件到目录,目录不存在
-    if (stat(dest, &info1) != 0 && strrchr(dest, '/') != NULL)
+    if (stat(dest, &info2) != 0 && strrchr(dest, '/') != NULL)
     {
 
         char *path_dir = strrchr(dest, '/');
