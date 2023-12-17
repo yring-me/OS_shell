@@ -22,6 +22,7 @@ void syscall_help()
     printf("vim             <file>                      a powerful editor\n");
     printf("to_uppercase    <string>                    capitalize the string\n");
     printf("to_lowercase    <string>                    change the string to lower-case\n");
+    printf("<               <cmd1> < <file>             use the file contents as the input of the cmd \n");
     printf(">               <cmd1> > <file>             rewrite the output of thd cmd to file\n");
     printf(">>              <cmd1> >> <file>            append the output of thd cmd to file\n");
     printf("|               <cmd1> | <cmd2>             use the output of cmd1 as the input of cmd2\n");
@@ -57,6 +58,8 @@ void syscall_man(char *cmd)
         printf("to_uppercase     <string>               capitalize the string\n");
     else if (strcmp("to_lowercase", cmd) == 0)
         printf("to_lowercase     <string>               change the string to lower-case\n");
+    else if (strcmp("<", cmd) == 0)
+        printf("<               <cmd1> < <file>             use the file contents as the input of the cmd \n");
     else if (strcmp(">", cmd) == 0)
         printf(">           <cmd1> > <file>             rewrite the output of thd cmd to file\n");
     else if (strcmp(">>", cmd) == 0)
