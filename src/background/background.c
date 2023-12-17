@@ -27,10 +27,18 @@ int background()
 
         printf("\n");
         printf("%schild pid:%d working...%s\n", COLOR_YELLOW, getpid(), COLOR_RESET);
-
-        // sleep(1000);可以加此语句来验证没有阻塞
+        printf(" \x1b[36m  \x1b[0m");    // 图标，可去掉
+        printf("\x1b[36m%s\x1b[0m\n", promat); // 固定格式，为当前目录
+        printf("\x1b[36m>>>\x1b[0m");          // 固定格式
+        fflush(stdout);
+        // sleep(10);
+        // 可以加此语句来验证没有阻塞
         system((const char *)args); // 这里也可以转为调用此程序的内部shell，做一次dispatch，简单处理一下返回逻辑就ok了，不过实在不想写了：）
         printf("%schild pid:%d done%s\n", COLOR_GREEN, getpid(), COLOR_RESET);
+        set_promat();
+        printf(" \x1b[36m  \x1b[0m");    // 图标，可去掉
+        printf("\x1b[36m%s\x1b[0m\n", promat); // 固定格式，为当前目录
+        printf("\x1b[36m>>>\x1b[0m");          // 固定格式
         exit(1);
     }
     memset(args, 0, sizeof(args));
